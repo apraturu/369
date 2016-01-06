@@ -1,3 +1,5 @@
+
+
 public class Action {
    //components
    private String actionType;
@@ -6,5 +8,5 @@ public class Action {
    private int pointsAdded;
    private int points;
    private String gameStatus;
-   private Move move;
+   private String move;
 }
