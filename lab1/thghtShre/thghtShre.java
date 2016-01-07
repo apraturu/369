@@ -9,11 +9,12 @@ import java.util.Random;
 public class thghtShre {
    public static String[] messageStatus = {"public", "protected", "private"};
    public static String[] recipient = {"all", "self", "subscribers"};
+   public static String[] names = {"messageId", "user", "status", "recipient", "text"};
    public static Random random = new Random();
 
    public static void main (String[] args) {
       JSONArray jArray = new JSONArray();
-      JSON jObject;
+      JSONObject jObject;
       //read in the output file and the number of JSON objects to generate
       Scanner sc = new Scanner(System.in);
       String outputFileName = sc.next();
@@ -36,14 +37,11 @@ public class thghtShre {
          Message m = new Message(messageId, user, status, reciever, text);
          //should you add in-response? Do a rand on 1
          //0 -> don't add the field 1->yes add the field
-         jObject = new JSONObject(m);
+         jObject = new JSONObject(m, names);
          jArray.put(jObject);
    	     jsonNum--;
    	  }
-
-   	  PrintWriter writer = new PrintWriter(outputFileName + ".txt", "UTF-8");
-      writer.print(jArray.toString());
-	  writer.close();
+   	  printToFile(outputFileName, jsonNum, jArray);
    }
 
    public static int generateMessageID(int currMessageId) {
@@ -66,5 +64,30 @@ public class thghtShre {
 
    public static String generateMessageText() {
       return "Placeholder";
+   }
+
+   public static void printToFile(String outputFileName, int jsonNum, JSONArray jArray) {
+      try {
+
+			File file = new File(outputFileName + ".txt");
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			try {
+			   bw.write(jArray.toString(3));
+		    }
+		    catch (Exception e) {
+               System.out.println(e);
+            }
+			bw.close();
+		}
+		 catch (IOException e) {
+			e.printStackTrace();
+		}
    }
 }

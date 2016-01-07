@@ -1,0 +1,30 @@
+[
+   {
+      "recipient": "subscribers",
+      "messageId": 1612963013,
+      "text": "Placeholder",
+      "user": "u1870",
+      "status": "protected"
+   },
+   {
+      "recipient": "self",
+      "messageId": 1341281598,
+      "text": "Placeholder",
+      "user": "u9431",
+      "status": "protected"
+   },
+   {
+      "recipient": "all",
+      "messageId": 851501739,
+      "text": "Placeholder",
+      "user": "u3292",
+      "status": "protected"
+   },
+   {
+      "recipient": "self",
+      "messageId": 892795715,
+      "text": "Placeholder",
+      "user": "u7618",
+      "status": "protected"
+   }
+]
