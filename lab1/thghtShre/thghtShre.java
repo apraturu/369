@@ -1,3 +1,6 @@
+//javac -cp '.:org.json-20120521.jar'  Message.java thghtShre.java 
+//java -cp '.:org.json-20120521.jar' thghtShre 
+
 import java.util.*;
 import java.awt.*;
 import org.json.JSONObject;
@@ -32,7 +35,7 @@ public class thghtShre {
    	   	 //certain rectrictions
    	   	 String reciever = recipient[random.nextInt(3)];
    	   	 //Have a function to generate the message text
-   	   	 String text = generateMessageText();
+   	   	 String text = getMessage();
 
          Message m = new Message(messageId, user, status, reciever, text);
          //should you add in-response? Do a rand on 1
@@ -86,8 +89,35 @@ public class thghtShre {
             }
 			bw.close();
 		}
-		 catch (IOException e) {
-			e.printStackTrace();
+		 catch (Exception e) {
+			System.out.println(e);
 		}
+   }
+
+   public static String getMessage() {
+      String message = "";
+      String line = null;
+      ArrayList<String> words = new ArrayList<String>();
+      //Open the file
+      //Save all the words in an arraylist
+   	  //pick a random number from 2 to 20 for the # of words for the message
+   	  //randomly pick index from size of arraylist the number of times for words
+      try {
+         FileReader fileReader = new FileReader("sense.txt");
+         BufferedReader bufferedReader = new BufferedReader(fileReader);
+         while((line = bufferedReader.readLine()) != null) {
+            words.add(line);
+         }
+      }
+      catch (Exception e) {
+         System.out.println(e);
+      }
+      Random random = new Random();
+      int numWords = random.nextInt((20-2) + 1) + 2;
+      while (numWords != 0) {
+         message = message + " " + words.get(random.nextInt(words.size()));
+         numWords--;
+      }
+      return message;
    }
 }
