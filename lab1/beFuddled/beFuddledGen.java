@@ -4,11 +4,8 @@ import org.json.*;
 public class beFuddledGen {
    public static void main(String[] args) {
       int numObjects;
-      Action action = new Action("move", 4, -5, 22, "???", "some move");
-      Record record = new Record("Anusha", 1, action);
-//      String[] recordNames = {"user", "game"};
-//      String[] actionNames = {"actionType", "actionNumber", "pointsAdded", 
-//                               "points", "gameStatus", "move"};
+      Record record = new Record("Anusha", 1, new Action("move", 4, 
+       new Location(5, 11), -5, 22, "djhsdf", "some move"));
 
       if (args.length != 2) {
          System.out.println("USAGE: java beFuddledGen <outputFileName> " + 
