@@ -8,4 +8,22 @@ public class Record {
    private String user;
    private int game;
    private Action action;
+
+   public Record(String u, int g, Action a) {
+      user = u;
+      game = g;
+      action = a;
+   }
+
+   public String getUser() {
+      return user;
+   }
+
+   public int getGame() {
+      return game;
+   }
+
+   public Action getAction() {
+      return action;
+   }
 }
