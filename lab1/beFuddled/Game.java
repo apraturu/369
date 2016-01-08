@@ -9,8 +9,7 @@ public class Game {
    private int points;
    private int maxMoves;
 
-   public Game(String uid, int numMoves) {
-      user = uid;
+   public Game(int numMoves) {
       moves = 0;
       shuffled = false;
       cleared = false;
@@ -22,6 +21,10 @@ public class Game {
 
    public void setGameID(int gid) {
       gameID = gid;
+   }
+
+   public void setUser(String u) {
+      user = u;
    }
 
    public void setMoves() {
