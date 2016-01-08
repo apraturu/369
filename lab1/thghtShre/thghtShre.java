@@ -18,16 +18,66 @@ public class thghtShre {
    public static void main (String[] args) {
       JSONArray jArray = new JSONArray();
       JSONObject jObject;
-      System.out.println("Input the outputfile name and the number of JSON objects");
-      System.out.println("<outputfile> <# of JSON objects>");
-      //read in the output file and the number of JSON objects to generate
-      Scanner sc = new Scanner(System.in);
-      String outputFileName = sc.next();
-   	  int jsonNum = sc.nextInt();
+      if (args.length != 2) {
+         System.out.println("USAGE: java beFuddledGen <outputFileName> " + 
+          "<numObjects>");
+         System.exit(-1);
+      }
+      String outputFileName = args[0];
+   	  int jsonNum = Integer.parseInt(args[1]);
 
    	  int currMessageId = -1;
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+            new FileOutputStream(args[0]), "utf-8"))) {
+         try {
+            writer.write("[\n");
+            while (jsonNum != 0) {
+          //get the message id and make sure it is greater than currMessageId
+             //get the userid which is a string u + num up to 10000
+             int messageId = generateMessageID(currMessageId);
+             String user = generateUser();
+             //Certain status' have more weight
+             String status = generateStatus();
+             //certain rectrictions
+             String reciever = generateRecipient(status);
+             //Have a function to generate the message text
+             String text = getMessage();
 
-   	  while (jsonNum != 0) {
+         Message m = new Message(messageId, user, status, reciever, text);
+         //should you add in-response? Do a rand on 1
+         //0 -> don't add the field 1->yes add the field
+
+         jObject = new JSONObject(m, names);
+         if (random.nextInt(2) == 1) {
+            try {
+               jObject = jObject.put("in-response", random.nextInt(m.messageId));
+            }
+            catch (Exception e) {
+               System.out.println(e);
+            }
+         }
+            if((jsonNum-1) == 0) {
+               writer.write(jObject.toString(3) + "\n");
+            }
+            else {
+               writer.write(jObject.toString(3) + ",\n");
+            }
+           jsonNum--;
+        }
+         }
+         catch (JSONException j) {
+            System.err.println("ERROR: could not convert to JSON");
+            System.exit(-1);
+         }
+         writer.write("]\n");
+         writer.close();
+      }
+      catch (IOException e) {
+         System.err.print("ERROR: could not write to file");
+         System.exit(-1);
+      }
+
+   	  /*while (jsonNum != 0) {
    	 	 //get the message id and make sure it is greater than currMessageId
    	   	 //get the userid which is a string u + num up to 10000
    	   	 int messageId = generateMessageID(currMessageId);
@@ -54,8 +104,8 @@ public class thghtShre {
          }
          jArray.put(jObject);
    	     jsonNum--;
-   	  }
-   	  printToFile(outputFileName, jsonNum, jArray);
+   	  }*/
+   	  //printToFile(outputFileName, jsonNum, jArray);
    }
 
    public static int generateMessageID(int currMessageId) {
