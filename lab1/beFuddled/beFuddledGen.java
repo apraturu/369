@@ -107,4 +107,92 @@ public class beFuddledGen {
       return null;
    }
 
+   public static String generateActionType() {
+      int randomInt = getRandomNumber(1,20);
+      if (randomInt == 1) {
+         return "SpecialMove";
+      }
+      return "Move";
+   }
+   public static String generateMove() {
+      int randomInt = getRandomNumber(1, 100);
+      if (randomInt <= 33) {
+         return "Shuffle";
+      }
+      else if (randomInt <= 58) {
+         return "Invert";
+      }
+      else if (randomInt <= 80) {
+         return "Clear";
+      }
+      else {
+         return "Rotate";
+      }
+   }
+   public static String generateGameMove(int gameNum, ArrayList<Game> games) {
+      boolean loop = true;
+      String move = generateMove();
+      while (loop) {
+         if (move.equals("Shuffle")) {
+            if (!games.get(gameNum).isShuffled()) {
+               return move;
+            }
+         }
+         else if (move.equals("Invert")) {
+            if (!games.get(gameNum).isInverted()) {
+               return move;
+            }
+         }
+         else if (move.equals("Clear")) {
+            if (!games.get(gameNum).isCleared()) {
+               return move;
+            }
+         }
+         else {
+            if (!games.get(gameNum).isRotated()) {
+               return move;
+            }
+         }
+         move = generateMove();
+      }
+      //figure out a better way to keep looping
+      return move;
+   }
+   public static Location generateLocation() {
+      Location location;
+      int randomInt = getRandomNumber(1, 10);
+      //Center Location
+      if(randomInt >= 6) {
+         location = new Location(getRandomNumber(5,15), getRandomNumber(5,15));
+      }
+      //edge location
+      else {
+         //x coord is from 1-4
+         if (getRandomNumber(0,1) == 0) {
+            //y coord is from 1-4
+            if (getRandomNumber(0,1) == 0) {
+               location = new Location(getRandomNumber(1,4), getRandomNumber(1,4));
+            }
+            //y coord is from 16-20
+            else {
+               location = new Location(getRandomNumber(1,4), getRandomNumber(16,20));
+            }
+         } 
+         //x coors is from 16-20
+         else {
+            //y coord is from 1-4
+            if (getRandomNumber(0,1) == 0) {
+               location = new Location(getRandomNumber(16,20), getRandomNumber(1,4));
+            }
+            //y coord is from 16-20
+            else {
+               location = new Location(getRandomNumber(16,20), getRandomNumber(16,20));
+            }
+         }
+      }
+      return location;
+   }
+   public static int getRandomNumber(int min, int max) {
+      return (random.nextInt((max-min) + 1) + min);
+   }
 }
