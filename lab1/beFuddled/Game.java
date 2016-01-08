@@ -2,21 +2,61 @@ public class Game {
    private String user;
    private int gameID;
    private int moves;
-   private boolean hasShuffled;
-   private boolean hasCleared;
-   private boolean hasInverted;
-   private boolean hasRotated;
+   private boolean shuffled;
+   private boolean cleared;
+   private boolean inverted;
+   private boolean rotated;
    private int points;
    private int maxMoves;
 
    public Game(String uid, int numMoves) {
       user = uid;
       moves = 0;
-      hasShuffled = false;
-      hasCleared = false;
-      hasInverted = false;
-      hasRotated = false;
+      shuffled = false;
+      cleared = false;
+      inverted = false;
+      rotated = false;
       points = 0;
       maxMoves = numMoves;
+   }
+
+   public void setGameID(int gid) {
+      gameID = gid;
+   }
+
+   public String getUser() {
+      return user;
+   }
+
+   public int getGameID() {
+      return gameID;
+   }
+
+   public int getMoves() {
+      returm moves;
+   }
+
+   public boolean isShuffled() {
+      return shuffled;
+   }
+
+   public boolean isCleared() {
+      return cleared;
+   }
+
+   public boolean isInverted() {
+      return inverted;
+   }
+
+   public boolean isRotated() {
+      return rotated;
+   }
+
+   public int getPoints() {
+      return points;
+   }
+
+   public int getMaxMoves() {
+      return maxMoves;
    }
 }

@@ -10,7 +10,7 @@ public class beFuddledGen {
       int numUsers = 0;
       int numGames;
       ArrayList<Game> games;
-
+      int numUnfinished;
 
       Record record = new Record("Anusha", 1, new Action("move", 4, 
        new Location(5, 11), -5, 22, "djhsdf", "some move"));
@@ -23,7 +23,10 @@ public class beFuddledGen {
       
       numObjects = Integer.parseInt(args[1]);
       numGames = numObjects / 45;
+      numUnfinished = numGames;
       games = new ArrayList<Game>(numGames);
+
+      //create games
       for (int i = 0; i < numGames; i++) {
          int rand = random.nextInt(100);
          if (rand < 5) {
@@ -62,7 +65,14 @@ public class beFuddledGen {
             JSONObject recordJSON = new JSONObject(record);
             writer.write(recordJSON.toString(3) + "\n");
             writer.write("[\n");
-
+            
+            while (numObjects > 0 && numUnfinished > 0) {
+               record = makeMove(games.get(random.nextInt(numGames)))
+               if (record != null) {
+                  recordJSON = new JSONObject(record);
+                  writer.write(recordJSON.toString(3) + "\n");
+               }
+            }
 
 
 
@@ -84,4 +94,16 @@ public class beFuddledGen {
          System.exit(-1);
       }
    }
+   
+   public static Record makeMove(Game g) {
+      if (g.getMoves() == g.getMaxMoves()) {
+         return null;
+      }
+      if (g.getMoves == 0) {
+         
+         return  
+      }
+      
+   }
+
 }
