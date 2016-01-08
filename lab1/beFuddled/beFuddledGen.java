@@ -11,9 +11,9 @@ public class beFuddledGen {
       int numGames;
       ArrayList<Game> games;
       int numUnfinished;
-
-      Record record = new Record("Anusha", 1, new Action("move", 4, 
-       new Location(5, 11), -5, 22, "djhsdf", "some move"));
+      int numStarted = 0;
+      Record record;
+      JSONObject recordJSON;
 
       if (args.length != 2) {
          System.out.println("USAGE: java beFuddledGen <outputFileName> " + 
@@ -62,25 +62,23 @@ public class beFuddledGen {
       try (Writer writer = new BufferedWriter(new OutputStreamWriter(
             new FileOutputStream(args[0]), "utf-8"))) {
          try {
-            JSONObject recordJSON = new JSONObject(record);
-            writer.write(recordJSON.toString(3) + "\n");
             writer.write("[\n");
-            
+            int temp = 20;
             while (numObjects > 0 && numUnfinished > 0) {
-               record = makeMove(games.get(random.nextInt(numGames)))
+               record = makeMove(games.get(random.nextInt(numGames)), numStarted);
+               if (record.getAction().getActionType().equals("GameStart")) {
+                  numStarted++;
+               }
+               if (record.getAction().getActionType().equals("GameEnd")) {
+                  numUnfinished--;
+               }
                if (record != null) {
                   recordJSON = new JSONObject(record);
-                  writer.write(recordJSON.toString(3) + "\n");
+                  writer.write(recordJSON.toString(3) + ",\n");
+                  numObjects--;
                }
+               temp --;
             }
-
-
-
-
-
-
-
-
          }
          catch (JSONException j) {
             System.err.println("ERROR: could not convert to JSON");
@@ -95,15 +93,18 @@ public class beFuddledGen {
       }
    }
    
-   public static Record makeMove(Game g) {
+   public static Record makeMove(Game g, int numStarted) {
       if (g.getMoves() == g.getMaxMoves()) {
          return null;
       }
-      if (g.getMoves == 0) {
-         
-         return  
+      if (g.getMoves() == 0) {
+         g.setGameID(numStarted + 1);
+
+         return new Record(g.getUser(), g.getGameID(), 
+          new Action("GameStart", 1, null, null, null, null, null));
       }
       
+      return null;
    }
 
 }

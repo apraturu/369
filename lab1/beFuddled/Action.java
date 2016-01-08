@@ -3,13 +3,13 @@ public class Action {
    private String actionType;
    private int actionNumber;
    private Location location;
-   private int pointsAdded;
-   private int points;
+   private Integer pointsAdded;
+   private Integer points;
    private String gameStatus;
    private String move;
 
-   public Action(String aType, int aNumber, Location l, int pAdded, int p, 
-                  String gStatus, String m) {
+   public Action(String aType, int aNumber, Location l, Integer pAdded, 
+                  Integer p, String gStatus, String m) {
       actionType = aType;
       actionNumber = aNumber;
       location = l;
@@ -31,11 +31,11 @@ public class Action {
       return location;
    }
 
-   public int getPointsAdded() {
+   public Integer getPointsAdded() {
       return pointsAdded;
    }
 
-   public int getPoints() {
+   public Integer getPoints() {
       return points;
    }
 

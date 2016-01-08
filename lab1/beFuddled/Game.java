@@ -57,7 +57,7 @@ public class Game {
    }
 
    public int getMoves() {
-      returm moves;
+      return moves;
    }
 
    public boolean isShuffled() {
