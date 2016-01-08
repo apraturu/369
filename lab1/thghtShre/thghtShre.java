@@ -31,16 +31,25 @@ public class thghtShre {
    	   	 int messageId = generateMessageID(currMessageId);
    	   	 String user = generateUser();
    	   	 //Certain status' have more weight
-   	   	 String status = messageStatus[random.nextInt(3)];
+   	   	 String status = generateStatus();
    	   	 //certain rectrictions
-   	   	 String reciever = recipient[random.nextInt(3)];
+   	   	 String reciever = generateRecipient(status);
    	   	 //Have a function to generate the message text
    	   	 String text = getMessage();
 
          Message m = new Message(messageId, user, status, reciever, text);
          //should you add in-response? Do a rand on 1
          //0 -> don't add the field 1->yes add the field
+
          jObject = new JSONObject(m, names);
+         if (random.nextInt(2) == 1) {
+            try {
+               jObject = jObject.put("in-response", random.nextInt(m.messageId));
+            }
+            catch (Exception e) {
+               System.out.println(e);
+            }
+         }
          jArray.put(jObject);
    	     jsonNum--;
    	  }
@@ -65,8 +74,60 @@ public class thghtShre {
       return userId;
    }
 
-   public static String generateMessageText() {
-      return "Placeholder";
+   public static String generateStatus() {
+      int randomInt = random.nextInt(10);
+      if(randomInt <=7) {
+         return "public";
+      }
+      else if(randomInt == 8) {
+         return "protected";
+      }
+         return "private";
+   }
+
+   public static String generateRecipient(String status) {
+      int randomInt;
+      /*Messages with the status "private" can have either "self" or a user
+      Id as a recepient.*/
+      if(status.equals("private")) {
+         if(getRandomNumber(0,1) == 0) {
+            return "self";
+         }
+         else {
+            return Integer.toString(getRandomNumber(1,10000));
+         }
+      }
+      /*Messages with the status "protected" can have either "self", or
+      "subscribers", or a user Id as a recepient.*/
+      else if(status.equals("protected")) {
+         randomInt = getRandomNumber(1,10);
+         if(randomInt <=8) {
+            return "subscribers";
+         }
+         else if(randomInt ==9) {
+            return "self";
+         }
+         else {
+            return Integer.toString(getRandomNumber(1,10000));
+         }
+      }
+      /*Messages with the status "public" can have any syntactically legal
+      "recepient" value.*/
+      else {
+         randomInt = getRandomNumber(1,10);
+         if(randomInt <=4) {
+            return "subscribers";
+         }
+         else if(randomInt <=8) {
+            return "all";
+         }
+         else if(randomInt == 9) {
+            return "self";
+         }
+         else {
+            return Integer.toString(getRandomNumber(1,10000));
+         }
+      }
    }
 
    public static void printToFile(String outputFileName, int jsonNum, JSONArray jArray) {
@@ -112,12 +173,15 @@ public class thghtShre {
       catch (Exception e) {
          System.out.println(e);
       }
-      Random random = new Random();
-      int numWords = random.nextInt((20-2) + 1) + 2;
+      int numWords = getRandomNumber(2,20);
       while (numWords != 0) {
          message = message + " " + words.get(random.nextInt(words.size()));
          numWords--;
       }
       return message;
+   }
+
+   public static int getRandomNumber(int min, int max) {
+      return (random.nextInt((max-min) + 1) + min);
    }
 }
