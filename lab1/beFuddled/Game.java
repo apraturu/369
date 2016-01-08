@@ -24,6 +24,30 @@ public class Game {
       gameID = gid;
    }
 
+   public void setMoves() {
+      moves = moves + 1;
+   }
+
+   public void setShuffled() {
+      shuffled = true;
+   }
+
+   public void setCleared() {
+      cleared = true;
+   }
+
+   public void setInverted() {
+      inverted = true;
+   }
+
+   public void setRotated() {
+      rotated = true;
+   }
+
+   public void setPoints(int point) {
+      points += points + point;
+   }
+
    public String getUser() {
       return user;
    }
