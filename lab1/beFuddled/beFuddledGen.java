@@ -22,9 +22,9 @@ public class beFuddledGen {
       }
       
       numObjects = Integer.parseInt(args[1]);
-      numGames = numObjects / 45;
-      numUnfinished = numGames;
+      numGames = (numObjects / 45) + 1;
       games = new ArrayList<Game>(numGames);
+      Game currentGame;
 
       //create games
       for (int i = 0; i < numGames; i++) {
@@ -63,21 +63,21 @@ public class beFuddledGen {
             new FileOutputStream(args[0]), "utf-8"))) {
          try {
             writer.write("[\n");
-            int temp = 20;
-            while (numObjects > 0 && numUnfinished > 0) {
-               record = makeMove(games.get(random.nextInt(numGames)), numStarted);
-               if (record.getAction().getActionType().equals("GameStart")) {
-                  numStarted++;
-               }
-               if (record.getAction().getActionType().equals("GameEnd")) {
-                  numUnfinished--;
-               }
+            while (numObjects > 0 && !games.isEmpty()) {
+               currentGame = games.get(random.nextInt(games.size()));
+               record = makeMove(currentGame, numStarted);
                if (record != null) {
+                  if (record.getAction().getActionType().equals("GameStart")) {
+                     numStarted++;
+                  }
+                  if (record.getAction().getActionType().equals("GameEnd")) {
+                     games.remove(currentGame);
+                  }
                   recordJSON = new JSONObject(record);
                   writer.write(recordJSON.toString(3) + ",\n");
+                  //System.out.println(recordJSON.toString(3) + ",");
                   numObjects--;
                }
-               temp --;
             }
          }
          catch (JSONException j) {
@@ -97,14 +97,44 @@ public class beFuddledGen {
       if (g.getMoves() == g.getMaxMoves()) {
          return null;
       }
-      if (g.getMoves() == 0) {
+      g.setMoves();
+      if (g.getMoves() == 1) {
          g.setGameID(numStarted + 1);
 
          return new Record(g.getUser(), g.getGameID(), 
           new Action("GameStart", 1, null, null, null, null, null));
       }
+      if (g.getMoves() == g.getMaxMoves()) {
+         return new Record(g.getUser(), g.getGameID(),
+          new Action("GameStart", g.getMoves(), null, null, g.getPoints(),
+          (random.nextInt(2) == 0 ? "Win" : "Loss"), null));
+      }
       
-      return null;
+      String aType = generateActionType(), move = null;
+      Location loc = null;
+      Integer pAdded = null, pTotal = null;
+
+      if (aType.equals("Move")) {
+         System.out.println("if-before");
+         loc = generateLocation();
+         System.out.println("if-after");
+      }
+      else {
+         System.out.println("else-before");
+         move = generateGameMove(g);
+         if (move.equals("Shuffle")) pAdded = new Integer(50);
+         else if (move.equals("Clear")) pAdded = new Integer(-50);
+         else if (move.equals("Invert")) pAdded = new Integer(30);
+         else if (move.equals("Rotate")) pAdded = new Integer(-40);
+         System.out.println("else-after");
+      }
+         
+      if (pAdded == null) pAdded = new Integer(getRandomNumber(-20, 20));
+      g.setPoints(pAdded.intValue());
+      pTotal = new Integer(g.getPoints() + pAdded.intValue());
+
+      return new Record(g.getUser(), g.getGameID(), 
+       new Action(aType, g.getMoves(), loc, pAdded, pTotal, null, move));
    }
 
    public static String generateActionType() {
@@ -129,27 +159,31 @@ public class beFuddledGen {
          return "Rotate";
       }
    }
-   public static String generateGameMove(int gameNum, ArrayList<Game> games) {
+   public static String generateGameMove(Game game) {
       boolean loop = true;
       String move = generateMove();
       while (loop) {
          if (move.equals("Shuffle")) {
-            if (!games.get(gameNum).isShuffled()) {
+            if (!game.isShuffled()) {
+               game.setShuffled();
                return move;
             }
          }
          else if (move.equals("Invert")) {
-            if (!games.get(gameNum).isInverted()) {
+            if (!game.isInverted()) {
+               game.setInverted();
                return move;
             }
          }
          else if (move.equals("Clear")) {
-            if (!games.get(gameNum).isCleared()) {
+            if (!game.isCleared()) {
+               game.setCleared();
                return move;
             }
          }
          else {
-            if (!games.get(gameNum).isRotated()) {
+            if (!game.isRotated()) {
+               game.setRotated();
                return move;
             }
          }

@@ -45,7 +45,7 @@ public class Game {
    }
 
    public void setPoints(int point) {
-      points += points + point;
+      points += point;
    }
 
    public String getUser() {
