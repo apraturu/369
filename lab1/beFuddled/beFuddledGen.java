@@ -30,34 +30,42 @@ public class beFuddledGen {
       for (int i = 0; i < numGames; i++) {
          int rand = random.nextInt(100);
          if (rand < 5) {
-            games.add(new Game("u" + Integer.toString(i + 1), 9 + random.nextInt(11)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             9 + random.nextInt(11)));
          }
          else if (rand < 15) {
-            games.add(new Game("u" + Integer.toString(i + 1), 20 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             20 + random.nextInt(10)));
          }
          else if (rand < 32) {
-            games.add(new Game("u" + Integer.toString(i + 1), 30 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             30 + random.nextInt(10)));
          }
          else if (rand < 68) {
-            games.add(new Game("u" + Integer.toString(i + 1), 40 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             40 + random.nextInt(10)));
          }
          else if (rand < 85) {
-            games.add(new Game("u" + Integer.toString(i + 1), 50 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             50 + random.nextInt(10)));
          }
          else if (rand < 95) {
-            games.add(new Game("u" + Integer.toString(i + 1), 60 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             60 + random.nextInt(10)));
          }
          else if (rand < 97) {
-            games.add(new Game("u" + Integer.toString(i + 1), 70 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             70 + random.nextInt(10)));
          }
          else if (rand < 99) {
-            games.add(new Game("u" + Integer.toString(i + 1), 80 + random.nextInt(10)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             80 + random.nextInt(10)));
          }
          else if (rand < 100) {
-            games.add(new Game("u" + Integer.toString(i + 1), 90 + random.nextInt(11)));
+            games.add(new Game("u" + Integer.toString(i + 1), 
+             90 + random.nextInt(11)));
          }
       }
-
 
       try (Writer writer = new BufferedWriter(new OutputStreamWriter(
             new FileOutputStream(args[0]), "utf-8"))) {
@@ -74,9 +82,30 @@ public class beFuddledGen {
                      games.remove(currentGame);
                   }
                   recordJSON = new JSONObject(record);
-                  writer.write(recordJSON.toString(3) + ",\n");
-                  //System.out.println(recordJSON.toString(3) + ",");
+                  writer.write(recordJSON.toString(3));
                   numObjects--;
+                  if(numObjects > 0) { writer.write(","); }
+                  writer.write("\n");
+               }
+            }
+            while (numObjects > 0) {
+               currentGame = new Game("u" + Integer.toString(++numGames), 50);
+
+               record = makeMove(currentGame, numStarted++);
+               recordJSON = new JSONObject(record);
+               writer.write(recordJSON.toString(3));
+               numObjects--;
+               if(numObjects > 0) { writer.write(","); }
+               writer.write("\n");
+
+               while (record != null && numObjects > 0 &&
+                !record.getAction().getActionType().equals("GameEnd")) {
+                  record = makeMove(currentGame, numStarted);
+                  recordJSON = new JSONObject(record);
+                  writer.write(recordJSON.toString(3));
+                  numObjects--;
+                  if(numObjects > 0) { writer.write(","); }
+                  writer.write("\n");
                }
             }
          }
@@ -106,27 +135,23 @@ public class beFuddledGen {
       }
       if (g.getMoves() == g.getMaxMoves()) {
          return new Record(g.getUser(), g.getGameID(),
-          new Action("GameStart", g.getMoves(), null, null, g.getPoints(),
+          new Action("GameEnd", g.getMoves(), null, null, g.getPoints(),
           (random.nextInt(2) == 0 ? "Win" : "Loss"), null));
       }
       
-      String aType = generateActionType(), move = null;
+      String aType = generateActionType(g), move = null;
       Location loc = null;
       Integer pAdded = null, pTotal = null;
 
       if (aType.equals("Move")) {
-         System.out.println("if-before");
          loc = generateLocation();
-         System.out.println("if-after");
       }
       else {
-         System.out.println("else-before");
          move = generateGameMove(g);
          if (move.equals("Shuffle")) pAdded = new Integer(50);
          else if (move.equals("Clear")) pAdded = new Integer(-50);
          else if (move.equals("Invert")) pAdded = new Integer(30);
          else if (move.equals("Rotate")) pAdded = new Integer(-40);
-         System.out.println("else-after");
       }
          
       if (pAdded == null) pAdded = new Integer(getRandomNumber(-20, 20));
@@ -208,22 +233,26 @@ public class beFuddledGen {
          if (getRandomNumber(0,1) == 0) {
             //y coord is from 1-4
             if (getRandomNumber(0,1) == 0) {
-               location = new Location(getRandomNumber(1,4), getRandomNumber(1,4));
+               location = new Location(getRandomNumber(1,4), 
+                getRandomNumber(1,4));
             }
             //y coord is from 16-20
             else {
-               location = new Location(getRandomNumber(1,4), getRandomNumber(16,20));
+               location = new Location(getRandomNumber(1,4), 
+                getRandomNumber(16,20));
             }
          } 
          //x coors is from 16-20
          else {
             //y coord is from 1-4
             if (getRandomNumber(0,1) == 0) {
-               location = new Location(getRandomNumber(16,20), getRandomNumber(1,4));
+               location = new Location(getRandomNumber(16,20), 
+                getRandomNumber(1,4));
             }
             //y coord is from 16-20
             else {
-               location = new Location(getRandomNumber(16,20), getRandomNumber(16,20));
+               location = new Location(getRandomNumber(16,20), 
+                getRandomNumber(16,20));
             }
          }
       }

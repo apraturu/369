@@ -85,6 +85,6 @@ public class Game {
    }
 
    public boolean canMakeSpecialMove() {
-      return !(shuffled && cleared && rotated && inverted)
+      return !(shuffled && cleared && rotated && inverted);
    }
 }
