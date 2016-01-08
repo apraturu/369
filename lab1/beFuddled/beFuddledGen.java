@@ -10,6 +10,8 @@ public class beFuddledGen {
       int numUsers = 0;
       int numGames;
       ArrayList<Game> games;
+      Game currentGame;
+      ArrayList<String> users = new ArrayList<String>();
       int numUnfinished;
       int numStarted = 0;
       Record record;
@@ -24,46 +26,37 @@ public class beFuddledGen {
       numObjects = Integer.parseInt(args[1]);
       numGames = (numObjects / 45) + 1;
       games = new ArrayList<Game>(numGames);
-      Game currentGame;
 
+      initUsers(users);
       //create games
       for (int i = 0; i < numGames; i++) {
          int rand = random.nextInt(100);
          if (rand < 5) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             9 + random.nextInt(11)));
+            games.add(new Game(9 + random.nextInt(11)));
          }
          else if (rand < 15) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             20 + random.nextInt(10)));
+            games.add(new Game(20 + random.nextInt(10)));
          }
          else if (rand < 32) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             30 + random.nextInt(10)));
+            games.add(new Game(30 + random.nextInt(10)));
          }
          else if (rand < 68) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             40 + random.nextInt(10)));
+            games.add(new Game(40 + random.nextInt(10)));
          }
          else if (rand < 85) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             50 + random.nextInt(10)));
+            games.add(new Game(50 + random.nextInt(10)));
          }
          else if (rand < 95) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             60 + random.nextInt(10)));
+            games.add(new Game(60 + random.nextInt(10)));
          }
          else if (rand < 97) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             70 + random.nextInt(10)));
+            games.add(new Game(70 + random.nextInt(10)));
          }
          else if (rand < 99) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             80 + random.nextInt(10)));
+            games.add(new Game(80 + random.nextInt(10)));
          }
          else if (rand < 100) {
-            games.add(new Game("u" + Integer.toString(i + 1), 
-             90 + random.nextInt(11)));
+            games.add(new Game(90 + random.nextInt(11)));
          }
       }
 
@@ -73,7 +66,7 @@ public class beFuddledGen {
             writer.write("[\n");
             while (numObjects > 0 && !games.isEmpty()) {
                currentGame = games.get(random.nextInt(games.size()));
-               record = makeMove(currentGame, numStarted);
+               record = makeMove(currentGame, numStarted, users);
                if (record != null) {
                   if (record.getAction().getActionType().equals("GameStart")) {
                      numStarted++;
@@ -89,9 +82,9 @@ public class beFuddledGen {
                }
             }
             while (numObjects > 0) {
-               currentGame = new Game("u" + Integer.toString(++numGames), 50);
+               currentGame = new Game(50);
 
-               record = makeMove(currentGame, numStarted++);
+               record = makeMove(currentGame, numStarted++,  users);
                recordJSON = new JSONObject(record);
                writer.write(recordJSON.toString(3));
                numObjects--;
@@ -100,7 +93,7 @@ public class beFuddledGen {
 
                while (record != null && numObjects > 0 &&
                 !record.getAction().getActionType().equals("GameEnd")) {
-                  record = makeMove(currentGame, numStarted);
+                  record = makeMove(currentGame, numStarted, users);
                   recordJSON = new JSONObject(record);
                   writer.write(recordJSON.toString(3));
                   numObjects--;
@@ -121,19 +114,27 @@ public class beFuddledGen {
          System.exit(-1);
       }
    }
+
+   public static void initUsers(ArrayList<String> users) {
+      for (int i = 0; i <10000; i++) {
+         users.add("u" + Integer.toString(i+1));
+      }
+   }
    
-   public static Record makeMove(Game g, int numStarted) {
+   public static Record makeMove(Game g, int numStarted, ArrayList<String> users) {
       if (g.getMoves() == g.getMaxMoves()) {
          return null;
       }
       g.setMoves();
       if (g.getMoves() == 1) {
          g.setGameID(numStarted + 1);
+         g.setUser(generateUser(users));
 
          return new Record(g.getUser(), g.getGameID(), 
           new Action("GameStart", 1, null, null, null, null, null));
       }
       if (g.getMoves() == g.getMaxMoves()) {
+         users.add(g.getUser());
          return new Record(g.getUser(), g.getGameID(),
           new Action("GameEnd", g.getMoves(), null, null, g.getPoints(),
           (random.nextInt(2) == 0 ? "Win" : "Loss"), null));
@@ -258,6 +259,14 @@ public class beFuddledGen {
       }
       return location;
    }
+
+   public static String generateUser(ArrayList<String> users) {
+      int index = random.nextInt(users.size());
+      String user = users.get(index);
+      users.remove(index);
+      return user;
+   }
+
    public static int getRandomNumber(int min, int max) {
       return (random.nextInt((max-min) + 1) + min);
    }
