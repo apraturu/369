@@ -83,4 +83,8 @@ public class Game {
    public int getMaxMoves() {
       return maxMoves;
    }
+
+   public boolean canMakeSpecialMove() {
+      return !(shuffled && cleared && rotated && inverted)
+   }
 }
