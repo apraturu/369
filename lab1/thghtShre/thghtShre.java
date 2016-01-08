@@ -18,6 +18,8 @@ public class thghtShre {
    public static void main (String[] args) {
       JSONArray jArray = new JSONArray();
       JSONObject jObject;
+      System.out.println("Input the outputfile name and the number of JSON objects");
+      System.out.println("<outputfile> <# of JSON objects>");
       //read in the output file and the number of JSON objects to generate
       Scanner sc = new Scanner(System.in);
       String outputFileName = sc.next();

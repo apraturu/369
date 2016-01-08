@@ -137,10 +137,13 @@ public class beFuddledGen {
        new Action(aType, g.getMoves(), loc, pAdded, pTotal, null, move));
    }
 
-   public static String generateActionType() {
+   public static String generateActionType(Game game) {
       int randomInt = getRandomNumber(1,20);
       if (randomInt == 1) {
-         return "SpecialMove";
+         if (game.canMakeSpecialMove()) {
+            return "SpecialMove";
+         }
+         return "Move";
       }
       return "Move";
    }
