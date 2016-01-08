@@ -1,6 +1,3 @@
-//javac -cp '.:org.json-20120521.jar'  Message.java thghtShre.java 
-//java -cp '.:org.json-20120521.jar' thghtShre 
-
 import java.util.*;
 import java.awt.*;
 import org.json.JSONObject;
@@ -76,36 +73,6 @@ public class thghtShre {
          System.err.print("ERROR: could not write to file");
          System.exit(-1);
       }
-
-   	  /*while (jsonNum != 0) {
-   	 	 //get the message id and make sure it is greater than currMessageId
-   	   	 //get the userid which is a string u + num up to 10000
-   	   	 int messageId = generateMessageID(currMessageId);
-   	   	 String user = generateUser();
-   	   	 //Certain status' have more weight
-   	   	 String status = generateStatus();
-   	   	 //certain rectrictions
-   	   	 String reciever = generateRecipient(status);
-   	   	 //Have a function to generate the message text
-   	   	 String text = getMessage();
-
-         Message m = new Message(messageId, user, status, reciever, text);
-         //should you add in-response? Do a rand on 1
-         //0 -> don't add the field 1->yes add the field
-
-         jObject = new JSONObject(m, names);
-         if (random.nextInt(2) == 1) {
-            try {
-               jObject = jObject.put("in-response", random.nextInt(m.messageId));
-            }
-            catch (Exception e) {
-               System.out.println(e);
-            }
-         }
-         jArray.put(jObject);
-   	     jsonNum--;
-   	  }*/
-   	  //printToFile(outputFileName, jsonNum, jArray);
    }
 
    public static int generateMessageID(int currMessageId) {
