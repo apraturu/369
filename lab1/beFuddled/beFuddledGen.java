@@ -11,7 +11,7 @@ public class beFuddledGen {
       int numGames;
       ArrayList<Game> games;
       Game currentGame;
-      ArrayList<String> users = new ArrayList<String>();
+      ArrayList<String> users = new ArrayList<String>(10000);
       int numUnfinished;
       int numStarted = 0;
       Record record;
@@ -123,6 +123,9 @@ public class beFuddledGen {
    
    public static Record makeMove(Game g, int numStarted, ArrayList<String> users) {
       if (g.getMoves() == g.getMaxMoves()) {
+         return null;
+      }
+      if (g.getMoves() == 0 && users.isEmpty()) {
          return null;
       }
       g.setMoves();
