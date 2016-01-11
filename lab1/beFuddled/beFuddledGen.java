@@ -24,7 +24,7 @@ public class beFuddledGen {
       }
       
       numObjects = Integer.parseInt(args[1]);
-      numGames = (numObjects / 45) + 1;
+      numGames = (numObjects / 40) + 1;
       games = new ArrayList<Game>(numGames);
 
       initUsers(users);
@@ -62,7 +62,7 @@ public class beFuddledGen {
 
       try (Writer writer = new BufferedWriter(new OutputStreamWriter(
             new FileOutputStream(args[0]), "utf-8"))) {
-         try {
+         //try {
             writer.write("[\n");
             while (numObjects > 0 && !games.isEmpty()) {
                currentGame = games.get(random.nextInt(games.size()));
@@ -75,7 +75,7 @@ public class beFuddledGen {
                      games.remove(currentGame);
                   }
                   recordJSON = new JSONObject(record);
-                  writer.write(recordJSON.toString(3));
+                  writer.write(recordJSON.toString());
                   numObjects--;
                   if(numObjects > 0) { writer.write(","); }
                   writer.write("\n");
@@ -86,7 +86,7 @@ public class beFuddledGen {
 
                record = makeMove(currentGame, numStarted++,  users);
                recordJSON = new JSONObject(record);
-               writer.write(recordJSON.toString(3));
+               writer.write(recordJSON.toString());
                numObjects--;
                if(numObjects > 0) { writer.write(","); }
                writer.write("\n");
@@ -95,17 +95,17 @@ public class beFuddledGen {
                 !record.getAction().getActionType().equals("GameEnd")) {
                   record = makeMove(currentGame, numStarted, users);
                   recordJSON = new JSONObject(record);
-                  writer.write(recordJSON.toString(3));
+                  writer.write(recordJSON.toString());
                   numObjects--;
                   if(numObjects > 0) { writer.write(","); }
                   writer.write("\n");
                }
             }
-         }
-         catch (JSONException j) {
-            System.err.println("ERROR: could not convert to JSON");
-            System.exit(-1);
-         }
+         //}
+         //catch (JSONException j) {
+            //System.err.println("ERROR: could not convert to JSON");
+            //System.exit(-1);
+         //}
          writer.write("]\n");
          writer.close();
       }
