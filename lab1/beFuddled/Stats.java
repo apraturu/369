@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Stats {
    //stats
    public int gamesSeen;
@@ -32,14 +34,14 @@ public class Stats {
    public int totalUsersStartedGames;
    public int totalUsersCompletedGames;
    public int maxGamesStarted;
-   public String maxGamesStarted_UserID;
+   public ArrayList<String> maxGamesStarted_UserIDs;
    public int maxGamesCompleted;
-   public String[] maxGamesCompleted_UserIDs;
+   public ArrayList<String> maxGamesCompleted_UserIDs;
    public int maxWins;
-   public String[] maxWins_UserIDs;
+   public ArrayList<String> maxWins_UserIDs;
    public int maxLosses;
-   public String[] maxLosses_UserIDs;
-   public String[] longestGame_UserIDs;
+   public ArrayList<String> maxLosses_UserIDs;
+   public ArrayList<String> longestGame_UserIDs;
 
    //histogram for moves
    public int boardLocation_1;
@@ -135,6 +137,54 @@ public class Stats {
        totalUsersStartedGames);
       System.out.format(leftAlignFormatInt, "# of users who completed a game",
        totalUsersCompletedGames);
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format(leftAlignFormatInt, "Largest # of games started",
+       maxGamesStarted);
+      System.out.print("| Users that started max # of games   | ");
+      for(int i = 0; i < maxGamesStarted_UserIDs.size() - 1; i++) {
+         System.out.print(maxGamesStarted_UserIDs.get(i) + ", ");
+      }
+      System.out.format("%s |%n", 
+       maxGamesStarted_UserIDs.get(maxGamesStarted_UserIDs.size() - 1));
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format(leftAlignFormatInt, "Largest # of games completed",
+       maxGamesCompleted);
+      System.out.print("| Users that completed max # of games | ");
+      for(int i = 0; i < maxGamesCompleted_UserIDs.size() - 1; i++) {
+         System.out.print(maxGamesCompleted_UserIDs.get(i) + ", ");
+      }
+      System.out.format("%s |%n", 
+       maxGamesCompleted_UserIDs.get(maxGamesCompleted_UserIDs.size() - 1));
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format(leftAlignFormatInt, "Largest # of games won",
+       maxWins);
+      System.out.print("| Users that won the max # of times   | ");
+      for(int i = 0; i < maxWins_UserIDs.size() - 1; i++) {
+         System.out.print(maxWins_UserIDs.get(i) + ", ");
+      }
+      System.out.format("%s |%n", 
+       maxWins_UserIDs.get(maxWins_UserIDs.size() - 1));
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format(leftAlignFormatInt, "Largest # of games lost",
+       maxLosses);
+      System.out.print("| Users that lost the max # of times  | ");
+      for(int i = 0; i < maxLosses_UserIDs.size() - 1; i++) {
+         System.out.print(maxLosses_UserIDs.get(i) + ", ");
+      }
+      System.out.format("%s |%n", 
+       maxLosses_UserIDs.get(maxLosses_UserIDs.size() - 1));
+      System.out.format("+---------------------------------------------+%n");
+      System.out.print("| Users that played the longest game  | ");
+      for(int i = 0; i < longestGame_UserIDs.size() - 1; i++) {
+         System.out.print(longestGame_UserIDs.get(i) + ", ");
+      }
+      System.out.format("%s |%n", 
+       longestGame_UserIDs.get(longestGame_UserIDs.size() - 1));
+      System.out.format("+---------------------------------------------+%n");
+      System.out.println();
+
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format("| LOCATION OF MOVES HISTOGRAM                 |%n");
       System.out.format("+---------------------------------------------+%n");
    }
 }
