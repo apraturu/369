@@ -50,11 +50,9 @@ public class beFuddledStats {
       
       try {
          tok = new JSONTokener(new FileReader(args[0]));
-         JSONObject action;
-         String aType, user;
+         JSONObject action, location;
+         String aType, user, loc, moveType;
          int moves;
-         JSONObject location;
-         String loc;
 
          while (tok.skipTo('{') != 0) {
             obj = new JSONObject(tok);
@@ -121,6 +119,21 @@ public class beFuddledStats {
                }
                else {
                   moveLocations.put(loc, 1);
+               }
+            }
+            else {
+               moveType = action.getString("move");
+               if (moveType.equals("Shuffle")) {
+                  stats.shuffleFrequency++;
+               }
+               else if (moveType.equals("Clear")) {
+                  stats.clearFrequency++;
+               }
+               else if (moveType.equals("Invert")) {
+                  stats.invertFrequency++;
+               }
+               else if (moveType.equals("Rotate")) {
+                  stats.rotateFrequency++;
                }
             }
          }

@@ -194,5 +194,15 @@ public class Stats {
       }
       System.out.format("+---------------------------------------------+%n");
       System.out.println();
+
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format("| SPECIAL MOVE FREQUENCY HISTOGRAM            |%n");
+      System.out.format("+---------------------------------------------+%n");
+      System.out.format(leftAlignFormatInt, "# of Shuffles", shuffleFrequency);
+      System.out.format(leftAlignFormatInt, "# of Clears", clearFrequency);
+      System.out.format(leftAlignFormatInt, "# of Inverts", invertFrequency);
+      System.out.format(leftAlignFormatInt, "# of Rotates", rotateFrequency);
+      System.out.format("+---------------------------------------------+%n");
+      System.out.println();
    }
 }
