@@ -6,6 +6,7 @@ import java.io.*;
 public class thghtShreStats {
    public static Stats stats = new Stats();
    public static void main(String[] args) {
+      Boolean isJSON = false;
       JSONObject obj;
       JSONTokener tok;
       ArrayList<String> users = new ArrayList<String>();
@@ -68,6 +69,7 @@ public class thghtShreStats {
          int messageCharacters;
 
          while (tok.skipTo('{') != 0) {
+            isJSON = true;
             message = new JSONObject(tok); 
             stats.numMessages++;  
             //MESSAGE PARSING
@@ -140,6 +142,12 @@ public class thghtShreStats {
       }
       catch(Exception e) {
          System.err.println("ERROR: could not parse file");
+         e.printStackTrace();
+         System.exit(1);
+      }
+      if(isJSON == false) {
+         System.err.println("ERROR: could not parse file. Incorrect format");
+         System.exit(1);
       }
       stats.numUniqueUsers = users.size();
       stats.avgLengthCharacters = calcAvg(numCharacters);
