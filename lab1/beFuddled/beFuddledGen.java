@@ -224,43 +224,126 @@ public class beFuddledGen {
       //figure out a better way to keep looping
       return move;
    }
+
    public static Location generateLocation() {
-      Location location;
-      int randomInt = getRandomNumber(1, 10);
-      //Center Location
-      if(randomInt >= 6) {
-         location = new Location(getRandomNumber(5,15), getRandomNumber(5,15));
-      }
-      //edge location
-      else {
-         //x coord is from 1-4
-         if (getRandomNumber(0,1) == 0) {
-            //y coord is from 1-4
-            if (getRandomNumber(0,1) == 0) {
-               location = new Location(getRandomNumber(1,4), 
-                getRandomNumber(1,4));
-            }
-            //y coord is from 16-20
-            else {
-               location = new Location(getRandomNumber(1,4), 
-                getRandomNumber(16,20));
-            }
-         } 
-         //x coors is from 16-20
-         else {
-            //y coord is from 1-4
-            if (getRandomNumber(0,1) == 0) {
-               location = new Location(getRandomNumber(16,20), 
-                getRandomNumber(1,4));
-            }
-            //y coord is from 16-20
-            else {
-               location = new Location(getRandomNumber(16,20), 
-                getRandomNumber(16,20));
-            }
+      int x, y, temp, randX = random.nextInt(100) + 1,
+       randY = random.nextInt(100) + 1;
+
+      if (randX == 1 || randX == 2 || randX == 3 || randX == 98 || randX == 99
+       || randX == 100) {
+         temp = random.nextInt(6);
+         switch(temp) {
+            case 0:
+               x = 1;
+               break;
+            case 1:
+               x = 2;
+               break;
+            case 2:
+               x = 3;
+               break;
+            case 3:
+               x =18;
+               break;
+            case 4:
+               x = 19;
+               break;
+            default:
+               x = 20;
+               break;
          }
       }
-      return location;
+      else if (randX < 8 || randX > 93) {
+         temp = random.nextInt(4);
+         switch(temp) {
+            case 0:
+               x = 4;
+               break;
+            case 1:
+               x =5;
+               break;
+            case 2:
+               x = 16;
+               break;
+            default:
+               x = 17;
+               break;
+         }
+      }
+      else if (randX < 11 || randX > 90) {
+         x = random.nextInt(2) == 0 ? 6 : 15;
+      }
+      else if (randX < 15 || randX > 86) {
+         x = random.nextInt(2) == 0 ? 7 : 14;
+      }
+      else if (randX < 22 || randX > 79) {
+         x = random.nextInt(2) == 0 ? 8 : 13;
+      }
+      else if (randX < 34 || randX > 67) {
+         x = random.nextInt(2) == 0 ? 9 : 12;
+      }
+      else {
+         x = random.nextInt(2) == 0 ? 10 : 11;
+      }
+
+      if (randY == 1 || randY == 2 || randY == 3 || randY == 98 || randY == 99
+       || randY == 100) {
+         temp = random.nextInt(6);
+         switch(temp) {
+            case 0:
+               y = 1;
+               break;
+            case 1:
+               y = 2;
+               break;
+            case 2:
+               y = 3;
+               break;
+            case 3:
+               y =18;
+               break;
+            case 4:
+               y = 19;
+               break;
+            default:
+               y = 20;
+               break;
+         }
+      }
+      else if (randY < 8 || randY > 93) {
+         temp = random.nextInt(4);
+         switch(temp) {
+            case 0:
+               y = 4;
+               break;
+            case 1:
+               y =5;
+               break;
+            case 2:
+               y = 16;
+               break;
+            default:
+               y = 17;
+               break;
+         }
+      }
+      else if (randY < 11 || randY > 90) {
+         y = random.nextInt(2) == 0 ? 6 : 15;
+      }
+      else if (randY < 15 || randY > 86) {
+         y = random.nextInt(2) == 0 ? 7 : 14;
+      }
+      else if (randY < 22 || randY > 79) {
+         y = random.nextInt(2) == 0 ? 8 : 13;
+      }
+      else if (randY < 34 || randY > 67) {
+         y = random.nextInt(2) == 0 ? 9 : 12;
+      }
+      else {
+         y = random.nextInt(2) == 0 ? 10 : 11;
+      }
+      
+      return new Location(x, y);
    }
 
    public static String generateUser(ArrayList<String> users) {

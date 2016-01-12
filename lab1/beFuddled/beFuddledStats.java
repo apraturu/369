@@ -164,7 +164,7 @@ public class beFuddledStats {
           stats.maxLosses);
          stats.longestGame_UserIDs = maxMoveUsers;
 
-
+         fillBoardLocationInfo(moveLocations, stats);
 
          stats.print();
       
@@ -226,5 +226,26 @@ public class beFuddledStats {
       }
 
       return keys;
+   }
+
+   public static void fillBoardLocationInfo(HashMap<String, Integer> map, 
+    Stats stats) {
+      Integer curValue;
+      ArrayList<String> keys;
+      ArrayList<Integer> values = new ArrayList<Integer>(map.values());
+      stats.boardLocationKeys = new ArrayList<String>(10);
+      stats.boardLocationValues = new ArrayList<Integer>(10);
+
+      while (stats.boardLocationKeys.size() < 10) {
+         curValue = new Integer(Collections.max(values));
+         values.remove(curValue);
+         keys = getKeysWithValue(map, new Integer(curValue));
+
+         for (int i = 0; i < keys.size() && stats.boardLocationKeys.size()
+           < 10; i++) {
+            stats.boardLocationKeys.add(keys.get(i));
+            stats.boardLocationValues.add(curValue);
+         }
+      }
    }
 }
