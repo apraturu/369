@@ -216,9 +216,9 @@ public class Stats {
       System.out.format(leftAlignFormatInt, "# of Response Messages", numResponseMessages);
       System.out.format(leftAlignFormatInt, "# of Non-Response Messages", numNotResponseMessages);
       System.out.format(leftAlignFormatInt, "[2, 6]", messageFrequency2_6);
-      System.out.format(leftAlignFormatInt, "[7, 11)", messageFrequency7_11);
-      System.out.format(leftAlignFormatInt, "[12, 16)", messageFrequency12_16);
-      System.out.format(leftAlignFormatInt, "[17, 20)", messageFrequency17_20);
+      System.out.format(leftAlignFormatInt, "[7, 11]", messageFrequency7_11);
+      System.out.format(leftAlignFormatInt, "[12, 16]", messageFrequency12_16);
+      System.out.format(leftAlignFormatInt, "[17, 20]", messageFrequency17_20);
      System.out.format("+------------------------------------------------------------+%n");
       System.out.println();
 
