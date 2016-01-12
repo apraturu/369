@@ -1,0 +1,49 @@
+Anusha Praturu and Varsha Roopreddy
+CPE 369 Section 03
+Lab 1 Part 1 (BeFuddled and ThghtShre Data Generation)
+
+Our submission contains two directories with all the files necessary to run our 
+programs.
+
+beFuddled/
+Action.java
+beFuddledGen.java
+Game.java
+Location.java
+Record.java
+org.json-20120521.jar
+
+thghtShre/
+Message.java
+org.json-20120521.jar
+sense.txt
+thghtShre.java
+
+In order to compile and run our programs please follow these instructions:
+
+beFuddled:
+COMPILE
+   $ javac -cp '.:org.json-20120521.jar' *.java
+RUN
+   $ java -cp '.:org.json-20120521.jar' beFuddledGen <outputFile> <numObjects>
+   
+   <outputFile>: complete name of the file to redirect the output. NOTE: no file
+                 extension is appended to the file name. User must input the 
+                 file name exactly as the want it to appear. (i.e. 'out.json' or
+                 'output.txt').
+   <numObjects>: the number of JSON objects the user wants printed to the file
+
+
+
+thghtShre:
+COMPILE
+   $ javac -cp '.:org.json-20120521.jar' *.java
+RUN
+   $ java -cp '.:org.json-20120521.jar' thghtShre <outputFile> <numObjects>
+   
+   <outputFile>: complete name of the file to redirect the output. NOTE: no file
+                 extension is appended to the file name. User must input the 
+                 file name exactly as the want it to appear. (i.e. 'out.json' or
+                 'output.txt').
+   <numObjects>: the number of JSON objects the user wants printed to the file
+
