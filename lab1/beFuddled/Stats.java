@@ -46,16 +46,6 @@ public class Stats {
    //histogram for moves
    public ArrayList<String> boardLocationKeys;
    public ArrayList<Integer> boardLocationValues;
-   // public String boardLocation_1
-   // public String boardLocation_2;
-   // public String boardLocation_3;
-   // public String boardLocation_4;
-   // public String boardLocation_5;
-   // public String boardLocation_6;
-   // public String boardLocation_7;
-   // public String boardLocation_8;
-   // public String boardLocation_9;
-   // public String boardLocation_10;
    
    //special moves
    public int shuffleFrequency;

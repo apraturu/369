@@ -187,6 +187,11 @@ public class thghtShreStats {
       stats.avgLengthCharactersNotResponseStandardDeviation = calcStdDev(numCharactersNotResponse, stats.avgLengthCharactersNotResponse);
 
       stats.print();
+      //There is a name of the output file to write to
+      if(args.length == 2) {
+         printToFile(args[1]);
+      }
+      //convertToJSONObjects();
    }
     public static int numOfWords(String messageText) {
       int words = 0;
@@ -328,6 +333,44 @@ public class thghtShreStats {
       }
       return Math.sqrt(sum / (double)ints.size());
    }
+   public static void convertToJSONObjects() {
+      JSONObject jObject = null;
+     try {
+         jObject = new JSONObject(stats);
+         System.out.println(jObject.toString(3));
+      }
+      catch (JSONException j) {
+            System.err.println("ERROR: could not convert to JSON");
+            System.exit(-1);
+         }
+    }
 
+       public static void printToFile(String outputFileName) {
+         JSONObject jObject = null;
+      try {
+
+         File file = new File(outputFileName);
+
+         // if file doesnt exists, then create it
+         if (!file.exists()) {
+            file.createNewFile();
+         }
+
+         FileWriter fw = new FileWriter(file.getAbsoluteFile());
+         BufferedWriter bw = new BufferedWriter(fw);
+         try {
+         jObject = new JSONObject(stats);
+         bw.write(jObject.toString(3));
+      }
+      catch (JSONException j) {
+            System.err.println("ERROR: could not convert to JSON");
+            System.exit(-1);
+         }
+         bw.close();
+      }
+       catch (Exception e) {
+         System.out.println(e);
+      }
+   }
  
 }

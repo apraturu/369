@@ -11,10 +11,12 @@ public class thghtShre {
    public static String[] recipient = {"all", "self", "subscribers"};
    public static String[] names = {"messageId", "user", "status", "recipient", "text"};
    public static Random random = new Random();
+   //public static ArrayList<String> words = new ArrayList<String>();
 
    public static void main (String[] args) {
       JSONArray jArray = new JSONArray();
       JSONObject jObject;
+      ArrayList<String> words = new ArrayList<String>();
       if (args.length != 2) {
          System.out.println("USAGE: java beFuddledGen <outputFileName> " + 
           "<numObjects>");
@@ -22,7 +24,17 @@ public class thghtShre {
       }
       String outputFileName = args[0];
    	  int jsonNum = Integer.parseInt(args[1]);
-
+        String line = null;
+        try {
+         FileReader fileReader = new FileReader("sense.txt");
+         BufferedReader bufferedReader = new BufferedReader(fileReader);
+         while((line = bufferedReader.readLine()) != null) {
+            words.add(line);
+         }
+        }  
+      catch (Exception e) {
+         System.out.println(e);
+      }
    	  int currMessageId = -1;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
             new FileOutputStream(args[0]), "utf-8"))) {
@@ -38,7 +50,7 @@ public class thghtShre {
              //certain rectrictions
              String reciever = generateRecipient(status);
              //Have a function to generate the message text
-             String text = getMessage();
+             String text = getMessage(words);
 
          Message m = new Message(messageId, user, status, reciever, text);
          //should you add in-response? Do a rand on 1
@@ -174,24 +186,9 @@ public class thghtShre {
 		}
    }
 
-   public static String getMessage() {
+   public static String getMessage(ArrayList<String> words) {
       String message = "";
       String line = null;
-      ArrayList<String> words = new ArrayList<String>();
-      //Open the file
-      //Save all the words in an arraylist
-   	  //pick a random number from 2 to 20 for the # of words for the message
-   	  //randomly pick index from size of arraylist the number of times for words
-      try {
-         FileReader fileReader = new FileReader("sense.txt");
-         BufferedReader bufferedReader = new BufferedReader(fileReader);
-         while((line = bufferedReader.readLine()) != null) {
-            words.add(line);
-         }
-      }
-      catch (Exception e) {
-         System.out.println(e);
-      }
       int numWords = getRandomNumber(2,20);
       while (numWords != 0) {
          message = message + " " + words.get(random.nextInt(words.size()));

@@ -186,6 +186,9 @@ public class beFuddledStats {
          System.err.println("ERROR: could not parse file");
          e.printStackTrace();
       }
+      if (args.length == 2) {
+        printToFile(args[1], stats, names);
+      }
    }
 
    public static double calcAvg(ArrayList<Integer> ints) {
@@ -259,6 +262,34 @@ public class beFuddledStats {
             stats.boardLocationKeys.add(keys.get(i));
             stats.boardLocationValues.add(curValue);
          }
+      }
+   }
+
+       public static void printToFile(String outputFileName, Stats stats, String[] names) {
+         JSONObject jObject = null;
+      try {
+
+         File file = new File(outputFileName);
+
+         // if file doesnt exists, then create it
+         if (!file.exists()) {
+            file.createNewFile();
+         }
+
+         FileWriter fw = new FileWriter(file.getAbsoluteFile());
+         BufferedWriter bw = new BufferedWriter(fw);
+         try {
+         jObject = new JSONObject(stats, names);
+         bw.write(jObject.toString(3));
+      }
+      catch (JSONException j) {
+            System.err.println("ERROR: could not convert to JSON");
+            System.exit(-1);
+         }
+         bw.close();
+      }
+       catch (Exception e) {
+         System.out.println(e);
       }
    }
 }
