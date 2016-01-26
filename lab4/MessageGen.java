@@ -1,5 +1,13 @@
+import java.util.Random;
+import java.io.*;
+import org.json.*;
+import java.util.*;
+import java.awt.*;
+
 public class MessageGen {
-  public JSONObject nextMessage() {
+  public static int currMessageId = -1;
+  public static Random random = new Random();
+  public static JSONObject nextMessage() {
       JSONObject jObject;
       String line = null;
       String[] names = {"messageId", "user", "status", "recipient", "text"};
@@ -35,7 +43,7 @@ public class MessageGen {
       return jObject;
    }
 
-   public int generateMessageID() {
+   public static int generateMessageID() {
       int messageId = random.nextInt();
       while (messageId <= currMessageId) {
          messageId = random.nextInt();
@@ -44,7 +52,7 @@ public class MessageGen {
       return messageId;
    }
 
-   public String generateUser() {
+   public static String generateUser() {
       int userNum = random.nextInt(10001);
       //userNum cannot be 0
       while (userNum == 0) {
@@ -54,7 +62,7 @@ public class MessageGen {
       return userId;
    }
 
-   public String generateStatus() {
+   public static String generateStatus() {
       int randomInt = random.nextInt(10);
       if(randomInt <=7) {
          return "public";
@@ -65,7 +73,7 @@ public class MessageGen {
          return "private";
    }
 
-   public String generateRecipient(String status) {
+   public static String generateRecipient(String status) {
       int randomInt;
       /*Messages with the status "private" can have either "self" or a user
       Id as a recepient.*/
@@ -110,7 +118,7 @@ public class MessageGen {
       }
    }
 
-    public String getMessage(ArrayList<String> words) {
+    public static String getMessage(ArrayList<String> words) {
       String message = "";
       String line = null;
       int numWords = getRandomNumber(2,20);
@@ -121,7 +129,7 @@ public class MessageGen {
       return message;
    }
 
-   public int getRandomNumber(int min, int max) {
+   public static int getRandomNumber(int min, int max) {
       return (random.nextInt((max-min) + 1) + min);
    }
 }

@@ -13,18 +13,11 @@ import com.mongodb.client.FindIterable;
 import org.bson.Document;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.*;
-import java.awt.*;
-import org.json.JSONObject;
 import org.json.*;
-import java.io.*;
-import java.util.Random;
 
 public class ClientSpoof {
-   public static int currMessageId = -1;
-   public static Random random = new Random();
-   public static void main(String[] args) {
-      System.out.println("testing");
+   public static void main(String[] args) throws JSONException {
+      System.out.println(MessageGen.nextMessage().toString(3));
    }
 }
 
