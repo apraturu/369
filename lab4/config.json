@@ -1,0 +1,13 @@
+{
+   "mongo":"localhost",
+   "port":27017,
+   "database":"apraturu",
+   "collection":"coll",
+   "monitor":"mon",
+   "delay":10,
+   "words":"sense.txt",
+   "clientLog":"clientLog.txt",
+   "serverLog":"serverLog.txt",
+   "wordFilter":"words.txt"
+}
+
