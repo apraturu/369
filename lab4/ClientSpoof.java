@@ -18,13 +18,16 @@ import org.json.JSONException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class ClientSpoof {
    public static void main(String[] args) {
       String line, jsonStr = "";
-      String mongo, dbName, collName = "", monName, words, clientLog = "";
-      int port, delay;
-      JSONObject config;
+      String mongo, dbName, collName = "", clientLog = "", user;
+      int port, delay, count = 0;
+      JSONObject config, msg;
       Logger logger;
       MongoClient client;
       MongoDatabase db;
@@ -103,24 +106,61 @@ public class ClientSpoof {
             System.exit(-1);
          }
          
-         logger = Logger.getLogger(clientLog);
+         logger = Logger.getLogger("org.mongodb.driver");
          logger.setLevel(Level.OFF);
 
          client = new MongoClient(mongo);
          db = client.getDatabase(dbName);
          coll = db.getCollection(collName);
 
-         coll.insertOne(Document.parse(MessageGen.nextMessage().toString()));
+         
+         //coll.insertOne(Document.parse(MessageGen.nextMessage().toString()));
+         System.out.println("************* STARTUP DIAGNOSTICS *************");
+         System.out.println();
+         DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+         Date date = new Date();
+         System.out.println(df.format(date));
+         System.out.println();
+         System.out.println("MongoDB server connection details:");
+         System.out.println("   client: " + mongo);
+         System.out.println("   port: " + port);
+         System.out.println();
+         System.out.println("   database: " + dbName);
+         System.out.println("   collection: " + collName);
+         System.out.println();
+         System.out.println("collection size: " + coll.count());
 
-         FindIterable<Document> result = coll.find();
-         result.forEach(new Block<Document>() {
-            @Override
-            public void apply(final Document d) {
-               System.out.println(d);
+
+         System.out.println();
+         System.out.println("***********************************************");
+
+         while(true) {
+            try {
+               Thread.sleep(1000 * delay);
+            } catch(InterruptedException ex) {
+               Thread.currentThread().interrupt();
             }
-         });
-
-         System.out.println("****************** SUCCESS ******************");
+            msg = MessageGen.nextMessage();
+            df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            date = new Date();
+            System.out.println();
+            System.out.println(df.format(date));
+            coll.insertOne(Document.parse(msg.toString()));
+            System.out.println(msg.toString(3));
+            count++;
+            if(count == 40) {
+               System.out.println();
+               System.out.println("***********************************");
+               System.out.println();
+               System.out.println("collection size: " + coll.count());
+               user = msg.getString("user");
+               System.out.println("total number of messages sent by user " 
+                + user + ": " + coll.count(new Document("user", user)));
+               System.out.println();
+               System.out.println("***********************************");
+               count = 0;
+            }
+         }
       }
       catch (Exception e) {
          e.printStackTrace();
