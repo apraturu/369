@@ -15,31 +15,42 @@ import org.bson.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.*;
 import java.util.*;
 import com.mongodb.Block;
 import com.mongodb.client.MongoIterable;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Writer;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class ServerSpoof {
+    public static MongoCollection<Document> coll;
+    public static MongoCollection<Document> monColl;
+    public static MongoIterable<String> distUsers;
+    public static Iterator userIter;
+    public static long uniqueUsers, numNewMsg;
+    public static ArrayList<String> words = new ArrayList<String>();
     public static void main(String[] args) {
       Logger logger;
       MongoClient client;
       MongoDatabase db;
-      MongoCollection<Document> coll;
-      MongoCollection<Document> monColl;
       String line, wordLine,jsonStr = "";
-      ArrayList<String> words = new ArrayList<String>();
+      ArrayList<Long> msgTotals, userTotals, newMsgTotals;
+      MonitorTotals mt;
       String[] names = {"recordType", "msgTotals", "userTotals", "newMsgTotals"};
       String mongo, dbName, collName = "", monName = "", wordFilter = "", serverLog = "";
       int port, delay, newMessages = 0, checkpoint = 1;
-      long uniqueMessages, uniqueUsers, publicNum, protectedNum, privateNum, allNum, selfNum;
+      long uniqueMessages, publicNum, protectedNum, privateNum, allNum, selfNum;
       long subscribersNum, userIdNum; 
       JSONObject config;
+      Writer writer;
 
       if(args.length != 1) {
          System.err.println("USAGE: java -cp "
@@ -111,7 +122,8 @@ public class ServerSpoof {
             System.exit(-1);
          }
 
-      //Establish the connection with MongoDB server
+         writer = new BufferedWriter(new OutputStreamWriter(
+          new FileOutputStream(serverLog), "utf-8"));
          logger = Logger.getLogger("org.mongodb.driver");
          logger.setLevel(Level.OFF);
 
@@ -140,27 +152,22 @@ public class ServerSpoof {
             System.out.println(e);
             System.exit(1);
          }
+
          //print startup diognostics
          DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
          Date date = new Date();
-         System.out.println(df.format(date));
-         System.out.println();
-         System.out.println("MongoDB server connection details:");
-         System.out.println("   client: " + mongo);
-         System.out.println("   port: " + port);
-         System.out.println();
-         System.out.println("   database: " + dbName);
-         System.out.println("   collection: " + collName);
-         System.out.println();
-         System.out.println("collection size: " + coll.count());
+         printStartup(writer, df.format(date), mongo, port, dbName, collName,
+          coll.count());
          //Main loop   
-         //while(true) {
-            Thread.sleep(3 * delay);
+         while(true) {
+            Thread.sleep(3000 * delay);
+            System.out.println("----------CHECKPOINT " + checkpoint + "----------");
             uniqueMessages = coll.count();
-            //TODO: how to find the distinct unique users. no repeats
-            //uniqueUsers = coll.distinct("user").count();
-            MongoIterable<String> l1 = (MongoIterable<String>)(coll.distinct("recipient", String.class));
-            uniqueUsers = 1;
+            distUsers = (MongoIterable<String>)(coll.distinct("user", String.class));
+            userIter = distUsers.iterator();
+            for(uniqueUsers = 0; userIter.hasNext(); ++uniqueUsers) {
+               userIter.next();
+            }
             publicNum = coll.count(new Document("status", "public"));
             privateNum = coll.count(new Document("status", "private"));
             protectedNum = coll.count(new Document("status", "protected"));
@@ -182,34 +189,78 @@ public class ServerSpoof {
                                                             "{\"self\":" + selfNum + "}," +
                                                             "{\"subscribers\":" + subscribersNum + "},"+
                                                             "{\"userId\":" + userIdNum + "}]}"; 
+            System.out.println("----------INFORMATION REQUESTS----------");
             System.out.println(monitorString);
             JSONObject monitor = new JSONObject(monitorString);
 
             monColl.insertOne(Document.parse(monitor.toString()));
             System.out.println(monitor.toString(3));
             //word search
-            //TODO: how to use regex to go through all the new messages
-            //TODO: how do we get the new messages via checkpoints??
             if(checkpoint == 1) {
-               ArrayList<Long> msgTotals = new ArrayList<Long>();
+               msgTotals = new ArrayList<Long>();
                msgTotals.add(uniqueMessages);
-               ArrayList<Long> userTotals = new ArrayList<Long>();
+               userTotals = new ArrayList<Long>();
                userTotals.add(uniqueUsers);
-               ArrayList<Long> newMsgTotals = new ArrayList<Long>();
-               newMsgTotals.add(new Long("1"));
-               MonitorTotals mt = new MonitorTotals("monitor totals", msgTotals, userTotals, newMsgTotals);
+               newMsgTotals = new ArrayList<Long>();
+               numNewMsg = coll.count();
+               newMsgTotals.add(numNewMsg);
+               mt = new MonitorTotals("monitor totals", msgTotals, userTotals, newMsgTotals);
                //create new monitor total JSON object and add to collection
                JSONObject monitorTotals = new JSONObject(mt, names);
+               System.out.println(monitorTotals.toString(3));
                monColl.insertOne(Document.parse(monitorTotals.toString()));
              }
-             //else {
+             else {
                //every checkpoint after get the record and call updateMonitorTotals
                FindIterable<Document> result = monColl.find(new Document("recordType", "monitor totals"));
                result.forEach(new Block<Document>() {        // print each retrieved document
                 @Override
                   public void apply(final Document d) {
+                     JSONObject newMonTotals;
+                     JSONArray tempArr;
+                     long newCollSize = coll.count();
                      try {
                         JSONObject j = new JSONObject(d.toJson());
+                        newMonTotals = new JSONObject();
+                        tempArr = j.getJSONArray("msgTotals");
+                        tempArr.put(newCollSize);
+                        newMonTotals.put("recordType", "monitor totals");
+                        newMonTotals.put("msgTotals", tempArr);
+                        tempArr = j.getJSONArray("userTotals");
+                        distUsers = (MongoIterable<String>)(coll.distinct("user", String.class));
+                        userIter = distUsers.iterator();
+                        for(uniqueUsers = 0; userIter.hasNext(); ++uniqueUsers) {
+                           userIter.next();
+                        }
+                        tempArr.put(uniqueUsers); 
+                        newMonTotals.put("userTotals", tempArr);
+                        tempArr = j.getJSONArray("newMsgTotals");
+                        tempArr.put(newCollSize - numNewMsg);
+
+                        System.out.println("----------WORD SEARCH----------");
+                        //find word instances and print out the docs
+                        for (String word: words) {
+                           System.out.println("Keyword: " + word);
+                           if((newCollSize - numNewMsg) != 0) {
+                              FindIterable<Document> highestIdObj = coll.find().sort(new Document("_id", -1)).limit((int)(newCollSize - numNewMsg));
+                              highestIdObj = highestIdObj.filter(new Document("text", new Document("$regex", word)));
+                              highestIdObj.forEach(new Block<Document>() {        // print each retrieved document
+                                 @Override
+                                 public void apply(final Document d) {
+                                    System.out.println(d);
+                                 }
+                              });
+                           }
+                        }
+
+                        numNewMsg = newCollSize;
+                        newMonTotals.put("newMsgTotals", tempArr);
+
+                        monColl.replaceOne(new Document("recordType", "monitor totals"), Document.parse(newMonTotals.toString(3)));
+                        //monColl.insertOne(Document.parse(newMonTotals.toString()));
+                        System.out.println("----------MONITOR TOTALS----------");
+                        System.out.println(newMonTotals.toString(3));
+
                      }
                      catch(Exception e) {
                         System.out.println(e);
@@ -218,14 +269,44 @@ public class ServerSpoof {
                   }
 
                });
-             //}
+             }
              checkpoint++;
-         //}   
+         }   
       }
       catch (Exception e) {
          e.printStackTrace();
          System.exit(-1);
       }
 
+   }
+
+   public static void printStartup(Writer writer, String date, String mongo, 
+    int port, String db, String coll, long size) {
+      System.out.println("************* STARTUP DIAGNOSTICS *************\n");
+      System.out.println(date + "\n");
+      System.out.println("MongoDB server connection details:");
+      System.out.println("   client: " + mongo);
+      System.out.println("   port: " + port + "\n");
+      System.out.println("   database: " + db);
+      System.out.println("   collection: " + coll + "\n");
+      System.out.println("collection size: " + size + "\n");
+      System.out.println("***********************************************");
+      
+      try {
+         writer.write("************* STARTUP DIAGNOSTICS *************\n\n");
+         writer.write(date + "\n\n");
+         writer.write("MongoDB server connection details:\n");
+         writer.write("   client: " + mongo + "\n");
+         writer.write("   port: " + port + "\n\n");
+         writer.write("   database: " + db + "\n");
+         writer.write("   collection: " + coll + "\n\n");
+         writer.write("collection size: " + size + "\n\n");
+         writer.write("***********************************************\n");
+         writer.flush();
+      }
+      catch (IOException e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
    }
 }
