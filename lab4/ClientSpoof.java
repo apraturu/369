@@ -26,16 +26,14 @@ import java.text.SimpleDateFormat;
 
 public class ClientSpoof {
    public static void main(String[] args) {
-      String line, jsonStr = "", mongo, dbName, collName = "", clientLog = "",
-       user;
+      String mongo, dbName, collName = "", clientLog = "", user;
       int port, delay, count = 0;
-      long collSize, userMsgCount;
       JSONObject config, msg;
       Logger logger;
       MongoClient client;
       MongoDatabase db;
       MongoCollection<Document> coll;
-      DateFormat df;
+      DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
       Date date;
       Writer writer;
 
@@ -46,55 +44,49 @@ public class ClientSpoof {
          System.exit(-1);
       }
 
+      config = getJSONObject(args[0]);
       try {
-         BufferedReader reader = new BufferedReader(new FileReader(args[0]));
-         line = reader.readLine();
-         while (line != null) {
-            jsonStr += line;
-            line = reader.readLine();
+         mongo = config.getString("mongo");
+      } catch (JSONException e) {
+         mongo = "localhost";
+      }
+      mongo = (mongo.equals("") ? "localhost" : mongo);
+      try {
+         port = config.getInt("port");
+      } catch (JSONException e) {
+         port = 27017;
+      }
+      try {
+         dbName = config.getString("database");
+      } catch (JSONException e) {
+         dbName = "test";
+      }
+      try {
+         collName = config.getString("collection");
+      } catch (Exception e) {
+         System.err.println("Error: must specify collection name in "
+          + "configuration file.");
+         System.exit(-1);
+      }
+      try {
+         delay = config.getInt("delay");
+      } catch (JSONException e) {
+         delay = 10;
+      }
+      delay = (delay == 0 ? 10 : delay);
+      try {
+         clientLog = config.getString("clientLog");
+         if(clientLog.equals("")) {
+            throw new IllegalArgumentException();
          }
-         config = new JSONObject(jsonStr);
-         try {
-            mongo = config.getString("mongo");
-         } catch (JSONException e) {
-            mongo = "localhost";
-         }
-         mongo = (mongo.equals("") ? "localhost" : mongo);
-         try {
-            port = config.getInt("port");
-         } catch (JSONException e) {
-            port = 27017;
-         }
-         try {
-            dbName = config.getString("database");
-         } catch (JSONException e) {
-            dbName = "test";
-         }
-         try {
-            collName = config.getString("collection");
-         } catch (Exception e) {
-            System.err.println("Error: must specify collection name in "
-             + "configuration file.");
-            System.exit(-1);
-         }
-         try {
-            delay = config.getInt("delay");
-         } catch (JSONException e) {
-            delay = 10;
-         }
-         delay = (delay == 0 ? 10 : delay);
-         try {
-            clientLog = config.getString("clientLog");
-            if(clientLog.equals("")) {
-               throw new IllegalArgumentException();
-            }
-         }
-         catch (Exception e) {
-            System.err.println("Error: must specify valid file name to "
-             + "output client log.");
-            System.exit(-1);
-         }
-         
+      }
+      catch (Exception e) {
+         System.err.println("Error: must specify valid file name to "
+          + "output client log.");
+         System.exit(-1);
+      }
+
+      try {   
          writer = new BufferedWriter(new OutputStreamWriter(
           new FileOutputStream(clientLog), "utf-8"));
          logger = Logger.getLogger("org.mongodb.driver");
@@ -103,11 +95,10 @@ public class ClientSpoof {
          client = new MongoClient(mongo);
          db = client.getDatabase(dbName);
          coll = db.getCollection(collName);
-         collSize = coll.count();
-         df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
          date = new Date();
 
-         printStartup(writer, df.format(date), mongo, port, dbName, collName, collSize);
+         printStartup(writer, df.format(date), mongo, port, dbName, collName,
+          coll.count());
          
          while(true) {
             try {
@@ -115,36 +106,17 @@ public class ClientSpoof {
             } catch(InterruptedException ex) {
                Thread.currentThread().interrupt();
             }
+
             msg = MessageGen.nextMessage();
-            df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             date = new Date();
-            System.out.println("\n" + df.format(date));
             coll.insertOne(Document.parse(msg.toString()));
-            System.out.println(msg.toString(3));
-
-            writer.write("\n" + df.format(date) + "\n");
-            writer.write(msg.toString(3) + "\n");
-            writer.flush();
-
+            printMessage(writer, df.format(date), msg.toString(3));
             count++;
+            
             if(count == 40) {
-               collSize = coll.count();
                user = msg.getString("user");
-               userMsgCount = coll.count(new Document("user", user));
-               
-               System.out.println("\n***********************************\n");
-               System.out.println("collection size: " + collSize);
-               System.out.println("total number of messages sent by user " 
-                + user + ": " + userMsgCount);
-               System.out.println("\n***********************************");
-
-               writer.write("\n***********************************\n\n");
-               writer.write("collection size: " + collSize + "\n");
-               writer.write("total number of nessages sent by user " + user +
-                ": " + userMsgCount + "\n\n");
-               writer.write("***********************************\n");
-               writer.flush();
-
+               printCheck(writer, coll.count(), user, 
+                coll.count(new Document("user", user)));
                count = 0;
             }
          }
@@ -153,6 +125,25 @@ public class ClientSpoof {
          e.printStackTrace();
          System.exit(-1);
       }
+   }
+
+   public static JSONObject getJSONObject(String file) {
+      try {
+         String jsonStr = "", line;
+         BufferedReader reader = new BufferedReader(new FileReader(file));
+         line = reader.readLine();
+         while (line != null) {
+            jsonStr += line;
+            line = reader.readLine();
+         }
+         return new JSONObject(jsonStr);
+      }
+      catch (Exception e) {
+         System.err.println("Error: could not convert config file to JSON " 
+          + "object");
+         System.exit(-1);
+      }
+      return null;
    }
    
    public static void printStartup(Writer writer, String date, String mongo, 
@@ -177,6 +168,43 @@ public class ClientSpoof {
          writer.write("   collection: " + coll + "\n\n");
          writer.write("collection size: " + size + "\n\n");
          writer.write("***********************************************\n");
+         writer.flush();
+      }
+      catch (IOException e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
+   }
+
+   public static void printMessage(Writer writer, String date, String message) {
+      System.out.println("\n" + date);
+      System.out.println(message);
+
+      try {
+         writer.write("\n" + date + "\n");
+         writer.write(message + "\n");
+         writer.flush();
+      }
+      catch (IOException e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
+   }
+
+   public static void printCheck(Writer writer, long size, String user, 
+    long count) {
+      System.out.println("\n***********************************\n");
+      System.out.println("collection size: " + size);
+      System.out.println("total number of messages sent by user " + user + ": "
+       + count);
+      System.out.println("\n***********************************");
+
+      try {
+         writer.write("\n***********************************\n\n");
+         writer.write("collection size: " + size + "\n");
+         writer.write("total number of nessages sent by user " + user + ": "
+          + count + "\n\n");
+         writer.write("***********************************\n");
          writer.flush();
       }
       catch (IOException e) {
