@@ -22,6 +22,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.*;
 import java.util.*;
+import com.mongodb.Block;
+import com.mongodb.client.MongoIterable;
 
 public class ServerSpoof {
     public static void main(String[] args) {
@@ -157,6 +159,7 @@ public class ServerSpoof {
             uniqueMessages = coll.count();
             //TODO: how to find the distinct unique users. no repeats
             //uniqueUsers = coll.distinct("user").count();
+            MongoIterable<String> l1 = (MongoIterable<String>)(coll.distinct("recipient", String.class));
             uniqueUsers = 1;
             publicNum = coll.count(new Document("status", "public"));
             privateNum = coll.count(new Document("status", "private"));
@@ -199,9 +202,23 @@ public class ServerSpoof {
                JSONObject monitorTotals = new JSONObject(mt, names);
                monColl.insertOne(Document.parse(monitorTotals.toString()));
              }
-             else {
+             //else {
                //every checkpoint after get the record and call updateMonitorTotals
-             }
+               FindIterable<Document> result = monColl.find(new Document("recordType", "monitor totals"));
+               result.forEach(new Block<Document>() {        // print each retrieved document
+                @Override
+                  public void apply(final Document d) {
+                     try {
+                        JSONObject j = new JSONObject(d.toJson());
+                     }
+                     catch(Exception e) {
+                        System.out.println(e);
+                        System.exit(1);
+                     }
+                  }
+
+               });
+             //}
              checkpoint++;
          //}   
       }
