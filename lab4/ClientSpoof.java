@@ -22,9 +22,13 @@ import java.io.IOException;
 public class ClientSpoof {
    public static void main(String[] args) {
       String line, jsonStr = "";
-      String mongo, db, coll, mon, words, clientLog;
+      String mongo, dbName, collName = "", monName, words, clientLog = "";
       int port, delay;
       JSONObject config;
+      Logger logger;
+      MongoClient client;
+      MongoDatabase db;
+      MongoCollection<Document> coll;
 
       if(args.length != 1) {
          System.err.println("USAGE: java -cp "
@@ -56,14 +60,14 @@ public class ClientSpoof {
             port = 27017;
          }
          try {
-            db = config.getString("database");
+            dbName = config.getString("database");
          } catch (JSONException e) {
-            db = "test";
+            dbName = "test";
          }
          try {
-            coll = config.getString("collection");
-            mon = config.getString("monitor");
-            if(coll.equals(mon)) {
+            collName = config.getString("collection");
+            monName = config.getString("monitor");
+            if(collName.equals(monName)) {
                throw new IllegalArgumentException();
             }
          } catch (Exception e) {
@@ -98,8 +102,25 @@ public class ClientSpoof {
              + "output client log.");
             System.exit(-1);
          }
+         
+         logger = Logger.getLogger(clientLog);
+         logger.setLevel(Level.OFF);
 
-         //System.out.println("mongo = " + mongo + "; port = " + port);
+         client = new MongoClient(mongo);
+         db = client.getDatabase(dbName);
+         coll = db.getCollection(collName);
+
+         coll.insertOne(Document.parse(MessageGen.nextMessage().toString()));
+
+         FindIterable<Document> result = coll.find();
+         result.forEach(new Block<Document>() {
+            @Override
+            public void apply(final Document d) {
+               System.out.println(d);
+            }
+         });
+
+         System.out.println("****************** SUCCESS ******************");
       }
       catch (Exception e) {
          e.printStackTrace();

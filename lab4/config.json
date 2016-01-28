@@ -1,5 +1,5 @@
 {
-   "mongo":"localhost",
+   "mongo":"cslvm31",
    "port":27017,
    "database":"apraturu",
    "collection":"coll",
