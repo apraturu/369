@@ -8,8 +8,6 @@
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.Block;
-import com.mongodb.client.MongoIterable;
 import org.bson.Document;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -111,14 +109,6 @@ public class ClientSpoof {
 
          printStartup(writer, df.format(date), mongo, port, dbName, collName, collSize);
          
-         MongoIterable<String> l1 = (MongoIterable<String>)(coll.distinct("recipient", String.class));
-         l1.forEach(new Block<String>() {
-            @Override
-            public void apply(final String s) {
-               System.out.println(s);
-            }
-         });
-/*
          while(true) {
             try {
                Thread.sleep(1000 * delay);
@@ -157,7 +147,7 @@ public class ClientSpoof {
 
                count = 0;
             }
-         }*/
+         }
       }
       catch (Exception e) {
          e.printStackTrace();
