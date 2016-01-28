@@ -16,6 +16,10 @@ import java.util.logging.Level;
 import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Writer;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
@@ -27,6 +31,7 @@ public class ClientSpoof {
       String line, jsonStr = "";
       String mongo, dbName, collName = "", clientLog = "", user;
       int port, delay, count = 0;
+      long collSize, userMsgCount;
       JSONObject config, msg;
       Logger logger;
       MongoClient client;
@@ -40,8 +45,6 @@ public class ClientSpoof {
          System.exit(-1);
       }
 
-      //System.out.println(MessageGen.nextMessage().toString(3));
-      
       try {
          BufferedReader reader = new BufferedReader(new FileReader(args[0]));
          line = reader.readLine();
@@ -50,7 +53,6 @@ public class ClientSpoof {
             line = reader.readLine();
          }
          config = new JSONObject(jsonStr);
-         //System.out.println(config.toString(3));
          try {
             mongo = config.getString("mongo");
          } catch (JSONException e) {
@@ -69,13 +71,9 @@ public class ClientSpoof {
          }
          try {
             collName = config.getString("collection");
-            monName = config.getString("monitor");
-            if(collName.equals(monName)) {
-               throw new IllegalArgumentException();
-            }
          } catch (Exception e) {
-            System.err.println("Error: must specify collection and monitor "
-             + "names in configuration file. Names must be different.");
+            System.err.println("Error: must specify collection name in "
+             + "configuration file.");
             System.exit(-1);
          }
          try {
@@ -84,16 +82,6 @@ public class ClientSpoof {
             delay = 10;
          }
          delay = (delay == 0 ? 10 : delay);
-         try {
-            words = config.getString("words");
-            if(words.equals("")) {
-               throw new IllegalArgumentException();
-            }
-         } catch (Exception e) {
-            System.err.println("Error: must specify valid word file to "
-             + "generate messages.");
-            System.exit(-1);
-         }
          try {
             clientLog = config.getString("clientLog");
             if(clientLog.equals("")) {
@@ -106,6 +94,8 @@ public class ClientSpoof {
             System.exit(-1);
          }
          
+         Writer writer = new BufferedWriter(new OutputStreamWriter(
+          new FileOutputStream(clientLog), "utf-8"));
          logger = Logger.getLogger("org.mongodb.driver");
          logger.setLevel(Level.OFF);
 
@@ -113,8 +103,6 @@ public class ClientSpoof {
          db = client.getDatabase(dbName);
          coll = db.getCollection(collName);
 
-         
-         //coll.insertOne(Document.parse(MessageGen.nextMessage().toString()));
          System.out.println("************* STARTUP DIAGNOSTICS *************");
          System.out.println();
          DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -128,11 +116,21 @@ public class ClientSpoof {
          System.out.println("   database: " + dbName);
          System.out.println("   collection: " + collName);
          System.out.println();
-         System.out.println("collection size: " + coll.count());
-
-
+         collSize = coll.count();
+         System.out.println("collection size: " + collSize);
          System.out.println();
          System.out.println("***********************************************");
+         
+         writer.write("************* STARTUP DIAGNOSTICS *************\n\n");
+         writer.write(df.format(date) + "\n\n");
+         writer.write("MongoDB server connection details:\n");
+         writer.write("   client: " + mongo + "\n");
+         writer.write("   port: " + port + "\n\n");
+         writer.write("   database: " + dbName + "\n");
+         writer.write("   collection: " + collName + "\n\n");
+         writer.write("collection size: " + collSize + "\n\n");
+         writer.write("***********************************************\n");
+         writer.flush();
 
          while(true) {
             try {
@@ -147,17 +145,33 @@ public class ClientSpoof {
             System.out.println(df.format(date));
             coll.insertOne(Document.parse(msg.toString()));
             System.out.println(msg.toString(3));
+
+            writer.write("\n" + df.format(date) + "\n");
+            writer.write(msg.toString(3) + "\n");
+            writer.flush();
+
             count++;
             if(count == 40) {
-               System.out.println();
-               System.out.println("***********************************");
-               System.out.println();
-               System.out.println("collection size: " + coll.count());
+               collSize = coll.count();
                user = msg.getString("user");
-               System.out.println("total number of messages sent by user " 
-                + user + ": " + coll.count(new Document("user", user)));
+               userMsgCount = coll.count(new Document("user", user));
+               
                System.out.println();
                System.out.println("***********************************");
+               System.out.println();
+               System.out.println("collection size: " + collSize);
+               System.out.println("total number of messages sent by user " 
+                + user + ": " + userMsgCount);
+               System.out.println();
+               System.out.println("***********************************");
+
+               writer.write("\n***********************************\n\n");
+               writer.write("collection size: " + collSize + "\n");
+               writer.write("total number of nessages sent by user " + user +
+                ": " + userMsgCount + "\n\n");
+               writer.write("***********************************\n");
+               writer.flush();
+
                count = 0;
             }
          }
@@ -166,9 +180,6 @@ public class ClientSpoof {
          e.printStackTrace();
          System.exit(-1);
       }
-      
-
-
    }
 }
 
