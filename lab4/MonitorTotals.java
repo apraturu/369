@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.ArrayList;
 public class MonitorTotals {
 	public String recordType;
 	public ArrayList<Long> msgTotals;

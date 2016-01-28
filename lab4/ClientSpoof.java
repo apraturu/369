@@ -9,7 +9,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.Block;
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoIterable;
 import org.bson.Document;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -28,8 +28,8 @@ import java.text.SimpleDateFormat;
 
 public class ClientSpoof {
    public static void main(String[] args) {
-      String line, jsonStr = "";
-      String mongo, dbName, collName = "", clientLog = "", user;
+      String line, jsonStr = "", mongo, dbName, collName = "", clientLog = "",
+       user;
       int port, delay, count = 0;
       long collSize, userMsgCount;
       JSONObject config, msg;
@@ -37,6 +37,9 @@ public class ClientSpoof {
       MongoClient client;
       MongoDatabase db;
       MongoCollection<Document> coll;
+      DateFormat df;
+      Date date;
+      Writer writer;
 
       if(args.length != 1) {
          System.err.println("USAGE: java -cp "
@@ -94,7 +97,7 @@ public class ClientSpoof {
             System.exit(-1);
          }
          
-         Writer writer = new BufferedWriter(new OutputStreamWriter(
+         writer = new BufferedWriter(new OutputStreamWriter(
           new FileOutputStream(clientLog), "utf-8"));
          logger = Logger.getLogger("org.mongodb.driver");
          logger.setLevel(Level.OFF);
@@ -102,36 +105,20 @@ public class ClientSpoof {
          client = new MongoClient(mongo);
          db = client.getDatabase(dbName);
          coll = db.getCollection(collName);
-
-         System.out.println("************* STARTUP DIAGNOSTICS *************");
-         System.out.println();
-         DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-         Date date = new Date();
-         System.out.println(df.format(date));
-         System.out.println();
-         System.out.println("MongoDB server connection details:");
-         System.out.println("   client: " + mongo);
-         System.out.println("   port: " + port);
-         System.out.println();
-         System.out.println("   database: " + dbName);
-         System.out.println("   collection: " + collName);
-         System.out.println();
          collSize = coll.count();
-         System.out.println("collection size: " + collSize);
-         System.out.println();
-         System.out.println("***********************************************");
-         
-         writer.write("************* STARTUP DIAGNOSTICS *************\n\n");
-         writer.write(df.format(date) + "\n\n");
-         writer.write("MongoDB server connection details:\n");
-         writer.write("   client: " + mongo + "\n");
-         writer.write("   port: " + port + "\n\n");
-         writer.write("   database: " + dbName + "\n");
-         writer.write("   collection: " + collName + "\n\n");
-         writer.write("collection size: " + collSize + "\n\n");
-         writer.write("***********************************************\n");
-         writer.flush();
+         df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+         date = new Date();
 
+         printStartup(writer, df.format(date), mongo, port, dbName, collName, collSize);
+         
+         MongoIterable<String> l1 = (MongoIterable<String>)(coll.distinct("recipient", String.class));
+         l1.forEach(new Block<String>() {
+            @Override
+            public void apply(final String s) {
+               System.out.println(s);
+            }
+         });
+/*
          while(true) {
             try {
                Thread.sleep(1000 * delay);
@@ -141,8 +128,7 @@ public class ClientSpoof {
             msg = MessageGen.nextMessage();
             df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             date = new Date();
-            System.out.println();
-            System.out.println(df.format(date));
+            System.out.println("\n" + df.format(date));
             coll.insertOne(Document.parse(msg.toString()));
             System.out.println(msg.toString(3));
 
@@ -156,14 +142,11 @@ public class ClientSpoof {
                user = msg.getString("user");
                userMsgCount = coll.count(new Document("user", user));
                
-               System.out.println();
-               System.out.println("***********************************");
-               System.out.println();
+               System.out.println("\n***********************************\n");
                System.out.println("collection size: " + collSize);
                System.out.println("total number of messages sent by user " 
                 + user + ": " + userMsgCount);
-               System.out.println();
-               System.out.println("***********************************");
+               System.out.println("\n***********************************");
 
                writer.write("\n***********************************\n\n");
                writer.write("collection size: " + collSize + "\n");
@@ -174,10 +157,40 @@ public class ClientSpoof {
 
                count = 0;
             }
-         }
+         }*/
       }
       catch (Exception e) {
          e.printStackTrace();
+         System.exit(-1);
+      }
+   }
+   
+   public static void printStartup(Writer writer, String date, String mongo, 
+    int port, String db, String coll, long size) {
+      System.out.println("************* STARTUP DIAGNOSTICS *************\n");
+      System.out.println(date + "\n");
+      System.out.println("MongoDB server connection details:");
+      System.out.println("   client: " + mongo);
+      System.out.println("   port: " + port + "\n");
+      System.out.println("   database: " + db);
+      System.out.println("   collection: " + coll + "\n");
+      System.out.println("collection size: " + size + "\n");
+      System.out.println("***********************************************");
+      
+      try {
+         writer.write("************* STARTUP DIAGNOSTICS *************\n\n");
+         writer.write(date + "\n\n");
+         writer.write("MongoDB server connection details:\n");
+         writer.write("   client: " + mongo + "\n");
+         writer.write("   port: " + port + "\n\n");
+         writer.write("   database: " + db + "\n");
+         writer.write("   collection: " + coll + "\n\n");
+         writer.write("collection size: " + size + "\n\n");
+         writer.write("***********************************************\n");
+         writer.flush();
+      }
+      catch (IOException e) {
+         System.err.println("Error: could not write to log file.");
          System.exit(-1);
       }
    }
