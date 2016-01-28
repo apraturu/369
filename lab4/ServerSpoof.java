@@ -11,10 +11,12 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import org.bson.Document;
+import org.bson.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -30,7 +32,8 @@ public class ServerSpoof {
       MongoCollection<Document> monColl;
       String line, wordLine,jsonStr = "";
       ArrayList<String> words = new ArrayList<String>();
-      String mongo, dbName, collName = "", monName = "", wordFilter, serverLog;
+      String[] names = {"recordType", "msgTotals", "userTotals", "newMsgTotals"};
+      String mongo, dbName, collName = "", monName = "", wordFilter = "", serverLog = "";
       int port, delay, newMessages = 0, checkpoint = 1;
       long uniqueMessages, uniqueUsers, publicNum, protectedNum, privateNum, allNum, selfNum;
       long subscribersNum, userIdNum; 
@@ -106,7 +109,7 @@ public class ServerSpoof {
             System.exit(-1);
          }
 
-      //TODO: Establish the connection with MongoDB server
+      //Establish the connection with MongoDB server
          logger = Logger.getLogger("org.mongodb.driver");
          logger.setLevel(Level.OFF);
 
@@ -153,7 +156,7 @@ public class ServerSpoof {
             Thread.sleep(3 * delay);
             uniqueMessages = coll.count();
             //TODO: how to find the distinct unique users. no repeats
-            //uniqueUsers = coll.distinct("user", new Document());
+            //uniqueUsers = coll.distinct("user").count();
             uniqueUsers = 1;
             publicNum = coll.count(new Document("status", "public"));
             privateNum = coll.count(new Document("status", "private"));
@@ -161,8 +164,8 @@ public class ServerSpoof {
             allNum = coll.count(new Document("recipient", "all"));
             selfNum = coll.count(new Document("recipient", "self"));;
             subscribersNum = coll.count(new Document("recipient", "subscribers"));
-            //TODO: how to do a not and get distinct user IDs? no repeats
-            userIdNum = 1;
+
+            userIdNum = coll.count(new Document("recipient", new Document("$nin", new BsonArray(Arrays.asList(new BsonString("all"), new BsonString("self"), new BsonString("subscribers"))))));
             
             String monitorString = "{" +
                                     "\"time\": " + "\""+ df.format(date) + "\""+
@@ -185,11 +188,21 @@ public class ServerSpoof {
             //TODO: how to use regex to go through all the new messages
             //TODO: how do we get the new messages via checkpoints??
             if(checkpoint == 1) {
+               ArrayList<Long> msgTotals = new ArrayList<Long>();
+               msgTotals.add(uniqueMessages);
+               ArrayList<Long> userTotals = new ArrayList<Long>();
+               userTotals.add(uniqueUsers);
+               ArrayList<Long> newMsgTotals = new ArrayList<Long>();
+               newMsgTotals.add(new Long("1"));
+               MonitorTotals mt = new MonitorTotals("monitor totals", msgTotals, userTotals, newMsgTotals);
                //create new monitor total JSON object and add to collection
+               JSONObject monitorTotals = new JSONObject(mt, names);
+               monColl.insertOne(Document.parse(monitorTotals.toString()));
              }
              else {
                //every checkpoint after get the record and call updateMonitorTotals
              }
+             checkpoint++;
          //}   
       }
       catch (Exception e) {
