@@ -4,7 +4,8 @@
  * Lab 4
  * ServerSpoof.java
  */
-
+import java.lang.*;
+import org.bson.types.ObjectId;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -37,6 +38,9 @@ public class ServerSpoof {
     public static Iterator userIter;
     public static long uniqueUsers, numNewMsg;
     public static ArrayList<String> words = new ArrayList<String>();
+    public static Object highestId;
+    public static Writer writer;
+
     public static void main(String[] args) {
       Logger logger;
       MongoClient client;
@@ -50,7 +54,6 @@ public class ServerSpoof {
       long uniqueMessages, publicNum, protectedNum, privateNum, allNum, selfNum;
       long subscribersNum, userIdNum; 
       JSONObject config;
-      Writer writer;
 
       if(args.length != 1) {
          System.err.println("USAGE: java -cp "
@@ -161,7 +164,6 @@ public class ServerSpoof {
          //Main loop   
          while(true) {
             Thread.sleep(3000 * delay);
-            System.out.println("----------CHECKPOINT " + checkpoint + "----------");
             uniqueMessages = coll.count();
             distUsers = (MongoIterable<String>)(coll.distinct("user", String.class));
             userIter = distUsers.iterator();
@@ -177,24 +179,12 @@ public class ServerSpoof {
 
             userIdNum = coll.count(new Document("recipient", new Document("$nin", new BsonArray(Arrays.asList(new BsonString("all"), new BsonString("self"), new BsonString("subscribers"))))));
             
-            String monitorString = "{" +
-                                    "\"time\": " + "\""+ df.format(date) + "\""+
-                                    ",\"messages\": " + uniqueMessages +
-                                    ",\"users\": " + uniqueUsers +
-                                    ",\"new\": " + newMessages +
-                                    ",\"statusStats\": [" + "{\"public\":" + publicNum + "}," +
-                                                            "{\"private\":" + privateNum + "}," +
-                                                            "{\"protected\":" + protectedNum + "}]" +
-                                    ",\"recipientStats\": [" + "{\"all\":" + allNum + "}," +
-                                                            "{\"self\":" + selfNum + "}," +
-                                                            "{\"subscribers\":" + subscribersNum + "},"+
-                                                            "{\"userId\":" + userIdNum + "}]}"; 
-            System.out.println("----------INFORMATION REQUESTS----------");
-            System.out.println(monitorString);
-            JSONObject monitor = new JSONObject(monitorString);
+            date = new Date();
+            JSONObject monitor = printInformationRequests(writer, df.format(date), uniqueMessages, uniqueUsers,
+             newMessages, publicNum, privateNum, protectedNum, allNum, selfNum, 
+             subscribersNum, userIdNum, checkpoint);
 
             monColl.insertOne(Document.parse(monitor.toString()));
-            System.out.println(monitor.toString(3));
             //word search
             if(checkpoint == 1) {
                msgTotals = new ArrayList<Long>();
@@ -207,8 +197,16 @@ public class ServerSpoof {
                mt = new MonitorTotals("monitor totals", msgTotals, userTotals, newMsgTotals);
                //create new monitor total JSON object and add to collection
                JSONObject monitorTotals = new JSONObject(mt, names);
-               System.out.println(monitorTotals.toString(3));
+               printMonitorTotals(writer, monitorTotals.toString(3));
                monColl.insertOne(Document.parse(monitorTotals.toString()));
+               //Get the highest ID
+               FindIterable<Document> highestIdObj = coll.find().sort(new Document("_id", -1)).limit(1);
+               highestIdObj.forEach(new Block<Document>() {        // print each retrieved document
+                                 @Override
+                                 public void apply(final Document d) {
+                                    highestId = d.get("_id");
+                                 }
+                              });
              }
              else {
                //every checkpoint after get the record and call updateMonitorTotals
@@ -237,29 +235,28 @@ public class ServerSpoof {
                         tempArr = j.getJSONArray("newMsgTotals");
                         tempArr.put(newCollSize - numNewMsg);
 
-                        System.out.println("----------WORD SEARCH----------");
+                        System.out.println("\n\n----------WORD SEARCH----------\n");
+                        try {
+                           writer.write("\n\n----------WORD SEARCH----------\n");
+                        }
+                        catch (Exception e) {
+                           System.err.println("Error: could not write to log file.");
+                           System.exit(-1);
+                        }
                         //find word instances and print out the docs
                         for (String word: words) {
-                           System.out.println("Keyword: " + word);
-                           if((newCollSize - numNewMsg) != 0) {
-                              FindIterable<Document> highestIdObj = coll.find().sort(new Document("_id", -1)).limit((int)(newCollSize - numNewMsg));
-                              highestIdObj = highestIdObj.filter(new Document("text", new Document("$regex", word)));
-                              highestIdObj.forEach(new Block<Document>() {        // print each retrieved document
-                                 @Override
-                                 public void apply(final Document d) {
-                                    System.out.println(d);
-                                 }
-                              });
-                           }
+                              Document filter = new Document();
+                              filter.append("_id", new Document("$gt", new ObjectId(highestId.toString())));
+                              filter.append("text", new Document("$regex", word));
+                              FindIterable<Document> highestIdObj = coll.find(filter);
+                              printWords(highestIdObj, word);
                         }
 
                         numNewMsg = newCollSize;
                         newMonTotals.put("newMsgTotals", tempArr);
 
                         monColl.replaceOne(new Document("recordType", "monitor totals"), Document.parse(newMonTotals.toString(3)));
-                        //monColl.insertOne(Document.parse(newMonTotals.toString()));
-                        System.out.println("----------MONITOR TOTALS----------");
-                        System.out.println(newMonTotals.toString(3));
+                        printMonitorTotals(writer, newMonTotals.toString(3));
 
                      }
                      catch(Exception e) {
@@ -269,6 +266,15 @@ public class ServerSpoof {
                   }
 
                });
+
+               //Get the highest ID
+               FindIterable<Document> highestIdObj = coll.find().sort(new Document("_id", -1)).limit(1);
+               highestIdObj.forEach(new Block<Document>() {        // print each retrieved document
+                                 @Override
+                                 public void apply(final Document d) {
+                                    highestId = d.get("_id");
+                                 }
+                              });
              }
              checkpoint++;
          }   
@@ -308,5 +314,81 @@ public class ServerSpoof {
          System.err.println("Error: could not write to log file.");
          System.exit(-1);
       }
+   }
+
+   public static JSONObject printInformationRequests(Writer writer, String date, long uniqueMessages,
+    long uniqueUsers, long newMessages, long publicNum, long privateNum, long protectedNum,
+    long allNum, long selfNum, long subscribersNum, long userIdNum, int checkpoint) {
+      JSONObject monitor = new JSONObject();
+      try {
+         String monitorString = "{" +
+                                       "\"time\": " + "\""+ date + "\""+
+                                       ",\"messages\": " + uniqueMessages +
+                                       ",\"users\": " + uniqueUsers +
+                                       ",\"new\": " + newMessages +
+                                       ",\"statusStats\": [" + "{\"public\":" + publicNum + "}," +
+                                                               "{\"private\":" + privateNum + "}," +
+                                                               "{\"protected\":" + protectedNum + "}]" +
+                                       ",\"recipientStats\": [" + "{\"all\":" + allNum + "}," +
+                                                               "{\"self\":" + selfNum + "}," +
+                                                               "{\"subscribers\":" + subscribersNum + "},"+
+                                                               "{\"userId\":" + userIdNum + "}]}"; 
+         monitor = new JSONObject(monitorString);
+         System.out.println("\n\n\nCHECKPOINT " + checkpoint + "\n");
+         System.out.println("---------INFORMATION REQUESTS-----\n");
+         System.out.println(monitor.toString(3));
+      }
+      catch (Exception e) {
+         System.err.println(e);
+         System.exit(-1);
+      }
+      try {
+         writer.write("\n\n\nCHECKPOINT " + checkpoint + "\n");
+         writer.write("---------INFORMATION REQUESTS-----\n");
+         writer.write(monitor.toString(3) + "\n\n");
+         writer.flush();
+      }
+      catch (Exception e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
+      return monitor;
+   }
+
+   public static void printMonitorTotals(Writer writer, String monitorTotals) {
+      System.out.println("\n\n---------MONITOR TOTALS--------\n");
+      System.out.println(monitorTotals);
+       try {
+         writer.write("\n\n---------MONITOR TOTALS--------\n");
+         writer.write(monitorTotals + "\n\n");
+         writer.flush();
+      }
+      catch (Exception e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
+   }
+   public static void printWords(FindIterable<Document> highestIdObj, String word) {
+      System.out.println("Instances of " + word);
+      try {
+         writer.write("Instances of " + word + "\n");
+      }
+      catch (Exception e) {
+         System.err.println("Error: could not write to log file.");
+         System.exit(-1);
+      }
+      highestIdObj.forEach(new Block<Document>() {        // print each retrieved document
+                                 @Override
+                                 public void apply(final Document d) {
+                                    System.out.println(d);
+                                    try {
+                                       writer.write(d + "\n");
+                                    }
+                                    catch(Exception e) {
+                                        System.err.println("Error: could not write to log file.");
+                                        System.exit(-1);
+                                    }
+                                 }
+                              });
    }
 }
