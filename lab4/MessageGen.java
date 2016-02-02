@@ -1,3 +1,10 @@
+/**
+ * Varsha Roopreddy and Anusha Praturu
+ * CPE 369 - Secion 03
+ * Lab 4
+ * MessageGen.java
+ */
+
 import java.util.Random;
 import java.io.*;
 import org.json.*;

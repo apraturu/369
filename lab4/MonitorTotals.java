@@ -1,3 +1,10 @@
+/**
+ * Varsha Roopreddy and Anusha Praturu
+ * CPE 369 - Secion 03
+ * Lab 4
+ * MontiorTotals.java
+ */
+
 import java.util.ArrayList;
 public class MonitorTotals {
 	public String recordType;

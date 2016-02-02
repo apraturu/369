@@ -1,3 +1,10 @@
+/**
+ * Varsha Roopreddy and Anusha Praturu
+ * CPE 369 - Secion 03
+ * Lab 4
+ * Message.java
+ */
+
 public class Message {
    public int messageId;
    public String user;
