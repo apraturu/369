@@ -63,7 +63,7 @@ public class beFuddledGen {
       try (Writer writer = new BufferedWriter(new OutputStreamWriter(
             new FileOutputStream(args[0]), "utf-8"))) {
          try {
-            writer.write("[\n");
+            //writer.write("[\n");
             while (numObjects > 0 && !games.isEmpty()) {
                currentGame = games.get(random.nextInt(games.size()));
                record = makeMove(currentGame, numStarted, users);
@@ -77,7 +77,7 @@ public class beFuddledGen {
                   recordJSON = new JSONObject(record);
                   writer.write(recordJSON.toString(3));
                   numObjects--;
-                  if(numObjects > 0) { writer.write(","); }
+                  //if(numObjects > 0) { writer.write(","); }
                   writer.write("\n");
                }
             }
@@ -88,7 +88,7 @@ public class beFuddledGen {
                recordJSON = new JSONObject(record);
                writer.write(recordJSON.toString(3));
                numObjects--;
-               if(numObjects > 0) { writer.write(","); }
+               //if(numObjects > 0) { writer.write(","); }
                writer.write("\n");
 
                while (record != null && numObjects > 0 &&
@@ -97,7 +97,7 @@ public class beFuddledGen {
                   recordJSON = new JSONObject(record);
                   writer.write(recordJSON.toString(3));
                   numObjects--;
-                  if(numObjects > 0) { writer.write(","); }
+                  //if(numObjects > 0) { writer.write(","); }
                   writer.write("\n");
                }
             }
@@ -106,7 +106,7 @@ public class beFuddledGen {
             System.err.println("ERROR: could not convert to JSON");
             System.exit(-1);
          }
-         writer.write("]\n");
+         //writer.write("]\n");
          writer.close();
       }
       catch (IOException e) {
