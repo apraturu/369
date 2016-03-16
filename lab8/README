@@ -3,3 +3,26 @@ CPE 369 Section 03
 March 13, 2016
 Lab 8
 
+LargestValue.java
+PowerDays.java
+SeedKNN.java
+SeedNormKNN.java
+
+COMPILE:
+LargestValue
+   javac -cp hadoop-core-1.2.1.jar LargestValue.java
+   jar cvf LargestValue.jar *.class
+PowerDays
+   javac -cp hadoop-core-1.2.1.jar:json-mapreduce-1.0.jar:org.json-20120521.jar  PowerDays.java
+   jar cvf PowerDays.jar *.class
+
+RUN:
+LargestValue
+   hadoop jar LargestValue.jar LargestValue <InputFile1Path> <InputFile2Path> <OuputFolderPath> 
+
+PowerDays
+   hadoop jar PowerDays.jar PowerDays  -libjars ./json-mapreduce-1.0.jar,./org.json-20120521.jar <InputFilePath> <OutputFolder1Path> <FinalOutputFolderPath>
+
+COMPILE
+
+
